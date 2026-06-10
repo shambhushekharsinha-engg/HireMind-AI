@@ -162,16 +162,18 @@ Checks important sections including:
 Example:
 
 ✓ Education Section Found
+
 ✓ Projects Section Found
+
 ✓ Experience Section Found
+
 ✓ Certifications Found
 
 ---
 
+```markdown
 🏗️ System Architecture
 
-```mermaid
-graph TD
     A[📥 User Uploads Resume] --> B[📦 PDF Extraction Engine]
     B --> C[⚙️ Resume Text Processing]
     C --> D[🧠 Skill Detection Module]
@@ -180,9 +182,7 @@ graph TD
     F --> G[🚀 Career Recommendation Engine]
     G --> H[🖥️ Results Displayed on Frontend]
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style H fill:#bbf,stroke:#333,stroke-width:2px
-
+```
 
 🛠️ Technologies Used
 
@@ -242,6 +242,8 @@ HireMind-AI/
     ├── skills.jpeg
     ├── career.jpeg
     └── api-docs.jpeg
+
+```
 
 ---
 
