@@ -1,6 +1,6 @@
-🚀 HireMind AI
+<div align="center">🚀 HireMind AI
 
-<div align="center">"HireMind AI Logo" (https://via.placeholder.com/200x200.png?text=HireMind+AI)
+"HireMind AI Logo" (https://via.placeholder.com/200x200.png?text=HireMind+AI)
 
 AI-Powered Resume Analyzer & Career Intelligence Platform
 
@@ -10,7 +10,7 @@ Analyze resumes, calculate ATS scores, identify missing skills, evaluate job com
 "FastAPI" (https://img.shields.io/badge/FastAPI-Backend-green)
 "React" (https://img.shields.io/badge/React-Frontend-blue)
 "NLP" (https://img.shields.io/badge/NLP-spaCy-orange)
-"License" (https://img.shields.io/badge/Status-Active-success)
+"Status" (https://img.shields.io/badge/Status-Active-success)
 
 </div>---
 
