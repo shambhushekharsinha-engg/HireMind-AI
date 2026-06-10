@@ -224,10 +224,10 @@ HireMind-AI/
 │   │   ├── App.jsx
 │   │   ├── App.css
 │   │   ├── main.jsx
-│   │── README.md
+│   │
 │   ├── package.json
 │   └── vite.config.js
-│
+│── README.md
 └── screenshots/
     ├── homepage.png
     ├── analysis.png
