@@ -173,7 +173,6 @@ Example:
 
 ---
 ```markdown
-```mermaid
 graph TD
     A[📥 User Uploads Resume] --> B[📦 PDF Extraction Engine]
     B --> C[⚙️ Resume Text Processing]
@@ -185,7 +184,7 @@ graph TD
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style H fill:#bbf,stroke:#333,stroke-width:2px
-
+---
 
 🛠️ Technologies Used
 
