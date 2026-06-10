@@ -1,3 +1,4 @@
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/master/icons/intelligent-code-completion.svg" width="100" alt="HireMind AI Logo">
 </p>
@@ -169,30 +170,22 @@ Example:
 
 🏗️ System Architecture
 
-User Uploads Resume
-          │
-          ▼
-PDF Extraction Engine
-          │
-          ▼
-Resume Text Processing
-          │
-          ▼
-Skill Detection Module
-          │
-          ▼
-ATS Score Calculation
-          │
-          ▼
-Job Match Analysis
-          │
-          ▼
-Career Recommendation Engine
-          │
-          ▼
-Results Displayed on Frontend
 
 ---
+```markdown
+```mermaid
+graph TD
+    A[📥 User Uploads Resume] --> B[📦 PDF Extraction Engine]
+    B --> C[⚙️ Resume Text Processing]
+    C --> D[🧠 Skill Detection Module]
+    D --> E[📊 ATS Score Calculation]
+    E --> F[💼 Job Match Analysis]
+    F --> G[🚀 Career Recommendation Engine]
+    G --> H[🖥️ Results Displayed on Frontend]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#bbf,stroke:#333,stroke-width:2px
+
 
 🛠️ Technologies Used
 
@@ -229,28 +222,29 @@ Development Tools
 
 📂 Project Structure
 
+```text
 HireMind-AI/
-│
 ├── backend/
 │   ├── main.py
 │   ├── requirements.txt
-│   ├── download_model.py
+│   └── download_model.py
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── App.css
-│   │   ├── main.jsx
+│   │   └── main.jsx
 │   │
 │   ├── package.json
 │   └── vite.config.js
-│── README.md
+│
+├── README.md
 └── screenshots/
-    ├── homepage.png
-    ├── analysis.png
-    ├── skills.png
-    ├── career.png
-    └── api-docs.png
+    ├── homepage.jpeg
+    ├── analysis.jpeg
+    ├── skills.jpeg
+    ├── career.jpeg
+    └── api-docs.jpeg
 
 ---
 
