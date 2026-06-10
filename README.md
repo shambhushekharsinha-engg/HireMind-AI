@@ -1,35 +1,41 @@
-🚀 HireMind AI
+<p align="center">
+  <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/master/icons/intelligent-code-completion.svg" width="100" alt="HireMind AI Logo">
+</p>
 
-AI-Powered Resume Analyzer & Career Intelligence Platform
+<h1 align="center">🧠 HireMind AI</h1>
+<p align="center"><strong>AI-Powered Resume Analyzer & Career Intelligence Platform</strong></p>
 
-"Python" (https://img.shields.io/badge/Python-3.13-blue)
-"FastAPI" (https://img.shields.io/badge/FastAPI-Backend-green)
-"React" (https://img.shields.io/badge/React-Frontend-blue)
-"NLP" (https://img.shields.io/badge/NLP-spaCy-orange)
-"Status" (https://img.shields.io/badge/Status-Active-success)
-
-Analyze resumes, calculate ATS scores, identify missing skills, evaluate job compatibility, and generate personalized career recommendations using Artificial Intelligence.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-Backend-green?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/React-Frontend-blue?style=for-the-badge&logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/NLP-spaCy-orange?style=for-the-badge" alt="NLP">
+  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status">
+</p>
 
 ---
 
-Features
+Analyze resumes, calculate ATS scores, identify missing skills, evaluate job compatibility, and generate personalized career recommendations using Artificial Intelligence.
 
-- PDF Resume Upload
-- ATS Score Calculation
-- Skill Detection
-- Missing Skills Analysis
-- Job Match Score
-- Career Recommendations
-- Resume Strength Analysis
-- FastAPI Backend
-- React Frontend
+## 🚀 Features
+
+- **PDF Resume Upload** – Seamless automatic text extraction.
+- **ATS Score Calculation** – Comprehensive resume evaluation.
+- **Skill Detection** – Advanced NLP-based keyword extraction.
+- **Missing Skills Analysis** – Compare against real-world industry standards.
+- **Job Match Score** – Direct calculation of candidate-to-job alignment.
+- **Career Recommendations** – Machine Learning-driven career pathing.
+- **Resume Strength Analysis** – Core structural section validation.
+- **Modern Tech Stack** – FastAPI backend coupled with a fast React frontend.
+
+---
 
 
 📌 Overview
 
 HireMind AI is an intelligent resume analysis platform designed to help students, job seekers, and professionals optimize their resumes for modern recruitment systems.
 
-The system automatically extracts information from uploaded resumes, analyzes technical skills, calculates ATS compatibility scores, identifies missing job-relevant skills, and provides career guidance.
+The system automatically extracts information from uploaded resumes, analyzes technical skills, calculates ATS compatibility scores, identifies missing j ob-relevant skills, and provides career guidance.
 
 ---
 
