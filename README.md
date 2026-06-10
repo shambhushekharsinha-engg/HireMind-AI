@@ -13,7 +13,6 @@ Analyze resumes, calculate ATS scores, identify missing skills, evaluate job com
 "Status" (https://img.shields.io/badge/Status-Active-success)
 
 </div>---
-
 📌 Overview
 
 HireMind AI is an intelligent resume analysis platform designed to help students, job seekers, and professionals optimize their resumes for modern recruitment systems.
