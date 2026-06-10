@@ -1,10 +1,6 @@
-<div align="center">🚀 HireMind AI
-
-"HireMind AI Logo" (https://via.placeholder.com/200x200.png?text=HireMind+AI)
+🚀 HireMind AI
 
 AI-Powered Resume Analyzer & Career Intelligence Platform
-
-Analyze resumes, calculate ATS scores, identify missing skills, evaluate job compatibility, and generate personalized career recommendations using Artificial Intelligence.
 
 "Python" (https://img.shields.io/badge/Python-3.13-blue)
 "FastAPI" (https://img.shields.io/badge/FastAPI-Backend-green)
@@ -12,7 +8,23 @@ Analyze resumes, calculate ATS scores, identify missing skills, evaluate job com
 "NLP" (https://img.shields.io/badge/NLP-spaCy-orange)
 "Status" (https://img.shields.io/badge/Status-Active-success)
 
-</div>---
+Analyze resumes, calculate ATS scores, identify missing skills, evaluate job compatibility, and generate personalized career recommendations using Artificial Intelligence.
+
+---
+
+Features
+
+- PDF Resume Upload
+- ATS Score Calculation
+- Skill Detection
+- Missing Skills Analysis
+- Job Match Score
+- Career Recommendations
+- Resume Strength Analysis
+- FastAPI Backend
+- React Frontend
+
+
 📌 Overview
 
 HireMind AI is an intelligent resume analysis platform designed to help students, job seekers, and professionals optimize their resumes for modern recruitment systems.
