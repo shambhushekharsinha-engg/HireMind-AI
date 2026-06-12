@@ -372,6 +372,9 @@ Continuously improving features, UI/UX, and AI capabilities.
 
 📜 License
 
-This project is developed for educational, learning, and portfolio purposes.
+[![License: MIT](https://shields.io)](https://opensource.org)
 
-© 2026 HireMind AI. All Rights Reserved.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
