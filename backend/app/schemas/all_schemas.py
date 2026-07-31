@@ -6,11 +6,13 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: str
     password: str
+    mobile_number: Optional[str] = None
     full_name: Optional[str] = None
     role: Optional[str] = "student"
 
 class UserLogin(BaseModel):
-    email: str
+    email: Optional[str] = None
+    mobile_number: Optional[str] = None
     password: str
 
 class Token(BaseModel):
@@ -21,6 +23,7 @@ class Token(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
+    mobile_number: Optional[str] = None
     full_name: Optional[str]
     role: str
     is_active: bool

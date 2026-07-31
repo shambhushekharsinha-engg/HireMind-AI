@@ -10,14 +10,24 @@
 
 ---
 
-## 📌 Executive Summary & Project Vision
+## 🌐 Live Production Deployments & URLs
 
-HireMind AI is not just a standard resume analyzer. It is a SaaS-level **Career Operating System** designed to solve end-to-end career challenges for job seekers and recruiters alike:
+- **⚡ Production Web Application (Vercel)**: [https://hiremind-ai-resume.vercel.app](https://hiremind-ai-resume.vercel.app)
+- **⚙️ Backend REST API Documentation (Render)**: [https://hiremind-ai-au7b.onrender.com/docs](https://hiremind-ai-au7b.onrender.com/docs)
+- **📊 System Health Check**: [https://hiremind-ai-au7b.onrender.com/health](https://hiremind-ai-au7b.onrender.com/health)
+- **📈 Prometheus Metrics**: [https://hiremind-ai-au7b.onrender.com/metrics](https://hiremind-ai-au7b.onrender.com/metrics)
 
-- **Can users trust it?** Yes — powered by deterministic parsing, TF-IDF vector similarity, and explainable ATS score breakdowns.
-- **Is it fast?** Yes — sub-100ms response times for skill extraction and local vector computations.
-- **Is it intuitive?** Yes — modern 3D glassmorphic UI built with React 19 and Tailwind CSS v4.0.
-- **Does it solve a real problem?** Yes — bridges the gap between candidate resumes, ATS algorithms, and target company expectations.
+---
+
+## 🔑 Quick Demo Credentials (Email / Mobile No.)
+
+Try out HireMind AI instantly with pre-configured demo credentials:
+
+| Role | Email Login | Mobile No. Login | Password | Access Level |
+| :--- | :--- | :--- | :--- | :--- |
+| **Student** | `alex.student@hiremind.ai` | `+919876543210` | `demo1234` | Full Resume, ATS, Job Matcher & Coach |
+| **Recruiter** | `recruiter@apextech.com` | `+919876543211` | `demo1234` | Candidate Ranking & Resume Search |
+| **Admin** | `admin@hiremind.ai` | `+919876543212` | `demo1234` | System Analytics & Metrics Dashboard |
 
 ---
 
@@ -38,7 +48,7 @@ HireMind AI is not just a standard resume analyzer. It is a SaaS-level **Career 
    │            (/api/v1 Legacy & /api/v2 Enterprise)            │
    ├──────────────────────────────┬──────────────────────────────┤
    │ API Routers                  │ Middleware & Telemetry       │
-   │ • Auth & RBAC                │ • Process Timing Header      │
+   │ • Auth (Email/Mobile) & RBAC │ • Process Timing Header      │
    │ • Resume ATS & Builder       │ • CORS Policy Handler        │
    │ • AI Coach & Rewriter        │ • Prometheus Metrics         │
    │ • Integrations & Recruiter   │ • Health Check Endpoint      │
@@ -93,7 +103,7 @@ The backend database architecture consists of 12 relational models in `backend/a
 └──────────────┘     └──────────────┘     └──────────────────────┘
 ```
 
-1. **`users`**: Authentication, direct bcrypt password hashes, and RBAC roles (`Student`, `Recruiter`, `Admin`).
+1. **`users`**: Authentication (email & mobile number), direct bcrypt password hashes, and RBAC roles (`Student`, `Recruiter`, `Admin`).
 2. **`resumes`**: File storage paths, extracted raw text, and version numbers.
 3. **`resume_analyses`**: ATS scores, rating badges, section breakdowns, and detected skills.
 4. **`resume_builder_drafts`**: Saved JSON drafts and template selections.
@@ -113,8 +123,9 @@ The backend database architecture consists of 12 relational models in `backend/a
 ### API v1 Namespace (`/api/v1`)
 | Method | Path | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/register` | Register a new user account. |
-| `POST` | `/api/v1/auth/login` | Authenticate user and return JWT bearer token. |
+| `POST` | `/api/v1/auth/register` | Register a new user account with email or mobile number. |
+| `POST` | `/api/v1/auth/login` | Authenticate user via email or mobile number and return JWT token. |
+| `POST` | `/api/v1/auth/demo-login` | Instant 1-click login for Demo Student, Recruiter, or Admin. |
 | `POST` | `/api/v1/resumes/upload` | Upload resume file (PDF/DOCX) and run multi-factor ATS evaluation. |
 | `GET` | `/api/v1/resumes/history` | Retrieve historical resume evaluation records. |
 | `POST` | `/api/v1/builder/download-pdf` | Render and download formatted PDF resume. |
