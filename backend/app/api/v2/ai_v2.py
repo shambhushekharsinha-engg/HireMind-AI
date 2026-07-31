@@ -5,6 +5,7 @@ from app.services.cover_letter_service import CoverLetterService
 from app.services.linkedin_service import LinkedInService
 from app.services.company_insights_service import CompanyInsightsService
 from app.services.explainability_service import ExplainabilityService
+from app.services.benchmarking_service import BenchmarkingService
 
 router = APIRouter(prefix="/ai", tags=["AI Engine API v2"])
 
@@ -27,6 +28,19 @@ class ExplainabilityRequest(BaseModel):
     ats_score: float
     skills_count: int
     section_scores: Optional[Dict[str, float]] = {}
+
+class BenchmarkRequest(BaseModel):
+    resume_text: str
+    target_role: Optional[str] = "Machine Learning Engineer"
+
+class CareerGapRequest(BaseModel):
+    current_skills: List[str]
+    target_role: Optional[str] = "Machine Learning Engineer"
+
+class RecruiterSummaryRequest(BaseModel):
+    candidate_name: str
+    resume_text: str
+    target_role: Optional[str] = "Software Engineer"
 
 @router.post("/cover-letter")
 def generate_cover_letter(request: CoverLetterRequest):
@@ -56,4 +70,30 @@ def explain_ats_score(request: ExplainabilityRequest):
         ats_score=request.ats_score,
         section_scores=request.section_scores or {},
         skills_count=request.skills_count
+    )
+
+@router.post("/benchmark")
+def benchmark_resume(request: BenchmarkRequest):
+    return BenchmarkingService.benchmark_resume(
+        resume_text=request.resume_text,
+        target_role=request.target_role or "Machine Learning Engineer"
+    )
+
+@router.post("/career-gap")
+def analyze_career_gap(request: CareerGapRequest):
+    return BenchmarkingService.analyze_career_gap(
+        current_skills=request.current_skills,
+        target_role=request.target_role or "Machine Learning Engineer"
+    )
+
+@router.post("/recommend-projects")
+def recommend_projects(target_role: str = "Machine Learning Engineer"):
+    return BenchmarkingService.recommend_projects(target_role)
+
+@router.post("/recruiter-summary")
+def summarize_for_recruiter(request: RecruiterSummaryRequest):
+    return BenchmarkingService.summarize_for_recruiter(
+        candidate_name=request.candidate_name,
+        resume_text=request.resume_text,
+        target_role=request.target_role or "Software Engineer"
     )
