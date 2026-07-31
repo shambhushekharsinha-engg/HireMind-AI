@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, List
+from app.services.kaggle_dataset_engine import KaggleDatasetEngine
 
 ACTION_VERBS = {
     "developed", "engineered", "implemented", "spearheaded", "architected", "optimized",
@@ -13,6 +14,9 @@ class ATSEngine:
     def evaluate(cls, raw_text: str, sections: Dict[str, str], skills: List[str]) -> Dict[str, Any]:
         text_lower = raw_text.lower()
         word_count = len(raw_text.split())
+
+        # Detect Industry Domain Taxonomy via Kaggle Benchmark Engine
+        industry_info = KaggleDatasetEngine.detect_industry_field(skills, raw_text)
 
         # 1. Skill Score (max 35)
         skill_score = min(35.0, len(skills) * 3.5)
@@ -76,9 +80,9 @@ class ATSEngine:
         suggestions = []
 
         if skill_score >= 25:
-            strengths.append(f"Strong skill representation ({len(skills)} tech & core skills detected)")
+            strengths.append(f"Strong skill representation ({len(skills)} tech & core skills detected for {industry_info['primary_industry_field']})")
         else:
-            suggestions.append("Incorporate more industry-relevant technical & soft skills into your Skills section.")
+            suggestions.append(f"Incorporate more technical skills relevant to {industry_info['primary_industry_field']}.")
 
         if section_scores.get("experience", 0) > 0:
             strengths.append("Structured Work Experience section present")
@@ -103,6 +107,7 @@ class ATSEngine:
         return {
             "ats_score": total_score,
             "rating": rating,
+            "industry_classification": industry_info,
             "section_scores": {
                 "skill_match": round(skill_score, 1),
                 "sections_completeness": round(total_section_points, 1),
