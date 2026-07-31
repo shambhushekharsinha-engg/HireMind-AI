@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, Download, Code, Sparkles, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function PortfolioGeneratorPage({ latestAnalysis }) {
   const [theme, setTheme] = useState('dark');
@@ -21,7 +22,7 @@ export default function PortfolioGeneratorPage({ latestAnalysis }) {
         ]
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/v2/resume/portfolio-html', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/resume/portfolio-html`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme, resume_data: resumeData })

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Sparkles, Copy, Check, Download } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function CoverLetterPage({ latestAnalysis }) {
   const [candidateName, setCandidateName] = useState('Alex Mercer');
@@ -18,7 +19,7 @@ export default function CoverLetterPage({ latestAnalysis }) {
 
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v2/ai/cover-letter', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/ai/cover-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

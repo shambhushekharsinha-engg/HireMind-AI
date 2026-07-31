@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Award, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function LinkedInOptimizerPage() {
   const [headline, setHeadline] = useState('Software Engineering Student at Tech Institute | Interested in ML & Web Dev');
@@ -11,7 +12,7 @@ export default function LinkedInOptimizerPage() {
   const handleOptimize = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v2/ai/linkedin-optimize', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/ai/linkedin-optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ headline, summary, target_role: targetRole })

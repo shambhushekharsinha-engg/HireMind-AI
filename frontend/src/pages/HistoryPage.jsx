@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { History, FileText, Download, Award, Calendar } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
@@ -8,7 +9,7 @@ export default function HistoryPage() {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/resumes/history');
+      const response = await fetch(`${API_BASE_URL}/api/v1/resumes/history`);
       const data = await response.json();
       setHistory(data);
     } catch (err) {
@@ -64,7 +65,7 @@ export default function HistoryPage() {
                   </div>
 
                   <button
-                    onClick={() => window.open(`http://127.0.0.1:8000/api/v1/reports/download/${item.analysis_id}`, '_blank')}
+                    onClick={() => window.open(`${API_BASE_URL}/api/v1/reports/download/${item.analysis_id}`, '_blank')}
                     className="glow-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
                   >
                     <Download className="w-3.5 h-3.5" /> PDF Report

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquareCode, Sparkles, CheckCircle2, AlertTriangle, RefreshCw, Send } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function InterviewPrepPage({ latestAnalysis }) {
   const [targetRole, setTargetRole] = useState('Full-Stack Web Developer');
@@ -11,7 +12,7 @@ export default function InterviewPrepPage({ latestAnalysis }) {
 
   const fetchQuestions = async (role) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/interview/questions', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/interview/questions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -43,7 +44,7 @@ export default function InterviewPrepPage({ latestAnalysis }) {
     setEvaluating(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/interview/evaluate', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/interview/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -88,7 +89,6 @@ export default function InterviewPrepPage({ latestAnalysis }) {
 
       {questions.length > 0 && currentQ && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Question List Sidebar */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold uppercase text-gray-400 px-1">Questions List ({questions.length})</h4>
             {questions.map((q, idx) => (
@@ -116,7 +116,6 @@ export default function InterviewPrepPage({ latestAnalysis }) {
             ))}
           </div>
 
-          {/* Active Question Workspace */}
           <div className="md:col-span-2 space-y-6">
             <div className="glass-card p-6 space-y-4 border-indigo-500/30">
               <div className="flex items-center justify-between">
@@ -168,7 +167,6 @@ export default function InterviewPrepPage({ latestAnalysis }) {
               </div>
             </div>
 
-            {/* Answer Feedback Result */}
             {evalResult && (
               <div className="glass-card p-6 space-y-4 border-cyan-500/30 animate-fade-in">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Target, Sparkles, CheckCircle2, XCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function JobMatcherPage({ latestAnalysis }) {
   const [jobTitle, setJobTitle] = useState('');
@@ -20,7 +21,7 @@ export default function JobMatcherPage({ latestAnalysis }) {
 
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/jobs/match', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/jobs/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -50,7 +51,6 @@ export default function JobMatcherPage({ latestAnalysis }) {
         <p className="text-xs text-gray-400">TF-IDF Vector Space & Cosine Similarity Semantic Matching</p>
       </div>
 
-      {/* Dual Input Area */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="glass-card p-5 space-y-3">
           <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block">
@@ -109,7 +109,6 @@ export default function JobMatcherPage({ latestAnalysis }) {
         </button>
       </div>
 
-      {/* Match Result Display */}
       {matchResult && (
         <div className="space-y-6 animate-fade-in">
           <div className="glass-card p-6 border-cyan-500/30 flex flex-col md:flex-row items-center justify-between gap-6">

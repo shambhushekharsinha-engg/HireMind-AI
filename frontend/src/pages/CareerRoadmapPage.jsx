@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Compass, Sparkles, CheckCircle2, BookOpen, Award, DollarSign, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function CareerRoadmapPage({ latestAnalysis }) {
   const [targetRole, setTargetRole] = useState('AI / Machine Learning Engineer');
@@ -9,7 +10,7 @@ export default function CareerRoadmapPage({ latestAnalysis }) {
   const fetchRoadmap = async (role) => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/career/roadmap', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/career/roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,7 +40,6 @@ export default function CareerRoadmapPage({ latestAnalysis }) {
         <p className="text-xs text-gray-400">Personalized 4-Phase Step-by-Step Growth & Skill Gap Blueprint</p>
       </div>
 
-      {/* Role Selection */}
       <div className="glass-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="space-y-1">
           <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block">
@@ -75,7 +75,6 @@ export default function CareerRoadmapPage({ latestAnalysis }) {
         )}
       </div>
 
-      {/* Roadmap Step Timeline */}
       {roadmapData && (
         <div className="space-y-6">
           <div className="glass-card p-6 border-indigo-500/30">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Sparkles, Download, Save, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function ResumeBuilderPage() {
   const [template, setTemplate] = useState('Modern');
@@ -34,7 +35,7 @@ export default function ResumeBuilderPage() {
 
   const handleDownloadPDF = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/builder/download-pdf', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/builder/download-pdf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, template_name: template })
@@ -53,7 +54,7 @@ export default function ResumeBuilderPage() {
   const handleSaveDraft = async () => {
     setSaving(true);
     try {
-      await fetch('http://127.0.0.1:8000/api/v1/builder/draft', {
+      await fetch(`${API_BASE_URL}/api/v1/builder/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, template_name: template })
@@ -101,7 +102,6 @@ export default function ResumeBuilderPage() {
         </div>
       )}
 
-      {/* Template Selection Cards */}
       <div className="glass-card p-4 space-y-3">
         <label className="text-xs font-bold uppercase text-gray-400">Choose Template Style</label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -121,9 +121,7 @@ export default function ResumeBuilderPage() {
         </div>
       </div>
 
-      {/* Form Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Personal Details */}
         <div className="glass-card p-6 space-y-4">
           <h4 className="text-xs font-bold uppercase text-indigo-400 tracking-wider">1. Contact & Identity Information</h4>
           
@@ -177,7 +175,6 @@ export default function ResumeBuilderPage() {
           </div>
         </div>
 
-        {/* Experience & Skills */}
         <div className="glass-card p-6 space-y-4">
           <h4 className="text-xs font-bold uppercase text-cyan-400 tracking-wider">2. Technical Skills & Core Competencies</h4>
           

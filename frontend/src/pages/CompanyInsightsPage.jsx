@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Sparkles, CheckCircle2, DollarSign, Award, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function CompanyInsightsPage() {
   const [targetCompany, setTargetCompany] = useState('microsoft');
@@ -9,7 +10,7 @@ export default function CompanyInsightsPage() {
   const fetchBlueprint = async (companyStr) => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v2/ai/company-blueprint', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/ai/company-blueprint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_company: companyStr || targetCompany })

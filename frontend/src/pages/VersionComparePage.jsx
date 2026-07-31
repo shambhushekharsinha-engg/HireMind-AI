@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GitCompare, Plus, Minus, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function VersionComparePage() {
   const [v1Text, setV1Text] = useState('Alex Mercer. Software Engineer. Skills: Python, SQL, HTML, CSS. Worked on basic web app.');
@@ -10,7 +11,7 @@ export default function VersionComparePage() {
   const handleCompare = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v2/resume/compare-versions', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/resume/compare-versions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ v1_text: v1Text, v2_text: v2Text })

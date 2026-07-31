@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Award, Download, Filter } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function RecruiterPage() {
   const [minAts, setMinAts] = useState(0);
@@ -10,7 +11,7 @@ export default function RecruiterPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      let url = `http://127.0.0.1:8000/api/v1/recruiter/candidates?min_ats=${minAts}`;
+      let url = `${API_BASE_URL}/api/v1/recruiter/candidates?min_ats=${minAts}`;
       if (skillFilter.trim()) {
         url += `&skills=${encodeURIComponent(skillFilter)}`;
       }
@@ -37,7 +38,6 @@ export default function RecruiterPage() {
         <p className="text-xs text-gray-400">Search, filter, and rank candidate resumes by ATS scores and verified skills</p>
       </div>
 
-      {/* Filter Bar */}
       <div className="glass-card p-5 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <div className="space-y-1 w-full sm:w-64">
@@ -81,7 +81,6 @@ export default function RecruiterPage() {
         </button>
       </div>
 
-      {/* Candidate Ranking Table */}
       <div className="glass-card overflow-hidden">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -133,7 +132,7 @@ export default function RecruiterPage() {
                     </td>
                     <td className="p-4 text-right">
                       <button
-                        onClick={() => window.open(`http://127.0.0.1:8000/api/v1/reports/download/${cand.analysis_id}`, '_blank')}
+                        onClick={() => window.open(`${API_BASE_URL}/api/v1/reports/download/${cand.analysis_id}`, '_blank')}
                         className="px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white text-[11px] font-semibold inline-flex items-center gap-1 transition"
                       >
                         <Download className="w-3 h-3" /> Report

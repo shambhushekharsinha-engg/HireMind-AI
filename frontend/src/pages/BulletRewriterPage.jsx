@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Edit3, Sparkles, Copy, Check, ArrowRight, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function BulletRewriterPage() {
   const [bullet, setBullet] = useState('Built a web app using React and Python for data analysis.');
@@ -15,7 +16,7 @@ export default function BulletRewriterPage() {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/rewriter/rewrite', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/rewriter/rewrite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bullet_point: bullet, target_role: targetRole })
@@ -95,7 +96,6 @@ export default function BulletRewriterPage() {
         </div>
       </div>
 
-      {/* Options Display */}
       {result && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">

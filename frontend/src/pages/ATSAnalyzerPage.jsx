@@ -10,6 +10,7 @@ import {
   Layers,
   ChevronDown
 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setAnalysisData }) {
   const [file, setFile] = useState(null);
@@ -30,7 +31,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/resumes/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/resumes/upload`, {
         method: 'POST',
         body: formData
       });
@@ -56,7 +57,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
       alert('Analysis ID missing. Please analyze a resume first.');
       return;
     }
-    window.open(`http://127.0.0.1:8000/api/v1/reports/download/${analysisData.analysis_id}`, '_blank');
+    window.open(`${API_BASE_URL}/api/v1/reports/download/${analysisData.analysis_id}`, '_blank');
   };
 
   return (

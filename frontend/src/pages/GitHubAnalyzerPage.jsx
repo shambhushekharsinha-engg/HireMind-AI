@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Code, Sparkles, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function GitHubAnalyzerPage() {
   const [repoUrl, setRepoUrl] = useState('https://github.com/shambhushekharsinha-engg/HireMind-AI');
@@ -10,7 +11,7 @@ export default function GitHubAnalyzerPage() {
     if (!repoUrl) return;
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v2/integrations/github-analyze', {
+      const response = await fetch(`${API_BASE_URL}/api/v2/integrations/github-analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo_url: repoUrl })
