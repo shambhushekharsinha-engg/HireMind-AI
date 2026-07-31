@@ -9,8 +9,7 @@ import {
   RefreshCw,
   Layers,
   ChevronDown,
-  Globe,
-  Check
+  Globe
 } from 'lucide-react';
 import { API_BASE_URL as CONFIG_API_URL } from '../config';
 
@@ -24,13 +23,15 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
   const [showRawText, setShowRawText] = useState(false);
   const [backendStatus, setBackendStatus] = useState('checking');
 
-  const activeApiUrl = customApiUrl.replace(/\/$/, "");
+  // Strip trailing slashes and /docs suffix if accidentally pasted
+  const activeApiUrl = customApiUrl.replace(/\/docs\/?$/, "").replace(/\/$/, "");
 
   const pingBackend = async (url) => {
     setBackendStatus('checking');
     try {
-      const target = url.replace(/\/$/, "");
-      const res = await fetch(`${target}/health`, { signal: AbortSignal.timeout(8000) });
+      const target = url.replace(/\/docs\/?$/, "").replace(/\/$/, "");
+      // Allow 45s for Render free tier cold start wake-up
+      const res = await fetch(`${target}/health`, { signal: AbortSignal.timeout(45000) });
       if (res.ok) {
         setBackendStatus('online');
       } else {
@@ -46,8 +47,9 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
   }, [customApiUrl]);
 
   const handleSaveCustomUrl = (newUrl) => {
-    setCustomApiUrl(newUrl);
-    localStorage.setItem('hiremind_custom_api_url', newUrl);
+    const cleaned = newUrl.replace(/\/docs\/?$/, "").replace(/\/$/, "");
+    setCustomApiUrl(cleaned);
+    localStorage.setItem('hiremind_custom_api_url', cleaned);
   };
 
   const handleUpload = async () => {
@@ -79,7 +81,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
     } catch (err) {
       console.error(err);
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError(`Failed to fetch from ${activeApiUrl}. Ensure the URL is correct, includes 'https://', and Render backend service is running.`);
+        setError(`Failed to fetch from ${activeApiUrl}. If using Render free tier, open ${activeApiUrl}/docs in a new tab to wake up the server (cold start takes ~30s).`);
       } else {
         setError(err.message || 'Error communicating with backend server.');
       }
@@ -129,7 +131,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
               backendStatus === 'checking' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse' :
               'bg-red-500/20 text-red-300 border-red-500/30'
             }`}>
-              {backendStatus === 'online' ? '● Backend Online' : backendStatus === 'checking' ? 'Testing Connection...' : '⚠️ Unreachable'}
+              {backendStatus === 'online' ? '● Backend Online' : backendStatus === 'checking' ? 'Waking Up Server (~30s)...' : '⚠️ Server Asleep / Unreachable'}
             </span>
           </div>
 
@@ -149,6 +151,14 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
             onChange={(e) => handleSaveCustomUrl(e.target.value)}
             className="flex-1 px-3.5 py-2 rounded-xl bg-gray-900 border border-white/10 text-xs text-cyan-300 font-mono focus:outline-none focus:border-indigo-500"
           />
+          <a
+            href={`${activeApiUrl}/docs`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/30 text-xs font-semibold shrink-0"
+          >
+            Open /docs (Wake Server)
+          </a>
         </div>
       </div>
 
