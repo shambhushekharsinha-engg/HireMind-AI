@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   FileUp, 
   CheckCircle2, 
@@ -8,49 +8,17 @@ import {
   Sparkles, 
   RefreshCw,
   Layers,
-  ChevronDown,
-  Globe
+  ChevronDown
 } from 'lucide-react';
-import { API_BASE_URL as CONFIG_API_URL } from '../config';
+import { API_BASE_URL } from '../config';
 
 export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setAnalysisData }) {
-  const [customApiUrl, setCustomApiUrl] = useState(() => {
-    return localStorage.getItem('hiremind_custom_api_url') || CONFIG_API_URL;
-  });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRawText, setShowRawText] = useState(false);
-  const [backendStatus, setBackendStatus] = useState('checking');
 
-  // Strip trailing slashes and /docs suffix if accidentally pasted
-  const activeApiUrl = customApiUrl.replace(/\/docs\/?$/, "").replace(/\/$/, "");
-
-  const pingBackend = async (url) => {
-    setBackendStatus('checking');
-    try {
-      const target = url.replace(/\/docs\/?$/, "").replace(/\/$/, "");
-      // Allow 45s for Render free tier cold start wake-up
-      const res = await fetch(`${target}/health`, { signal: AbortSignal.timeout(45000) });
-      if (res.ok) {
-        setBackendStatus('online');
-      } else {
-        setBackendStatus('offline');
-      }
-    } catch (e) {
-      setBackendStatus('offline');
-    }
-  };
-
-  useEffect(() => {
-    pingBackend(activeApiUrl);
-  }, [customApiUrl]);
-
-  const handleSaveCustomUrl = (newUrl) => {
-    const cleaned = newUrl.replace(/\/docs\/?$/, "").replace(/\/$/, "");
-    setCustomApiUrl(cleaned);
-    localStorage.setItem('hiremind_custom_api_url', cleaned);
-  };
+  const activeApiUrl = API_BASE_URL.replace(/\/$/, "");
 
   const handleUpload = async () => {
     if (!file) {
@@ -80,11 +48,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
       if (onAnalysisComplete) onAnalysisComplete(data);
     } catch (err) {
       console.error(err);
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError(`Failed to fetch from ${activeApiUrl}. If using Render free tier, open ${activeApiUrl}/docs in a new tab to wake up the server (cold start takes ~30s).`);
-      } else {
-        setError(err.message || 'Error communicating with backend server.');
-      }
+      setError(err.message || 'Error communicating with backend server.');
     } finally {
       setLoading(false);
     }
@@ -118,48 +82,6 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
             Download PDF Report
           </button>
         )}
-      </div>
-
-      {/* Active API Endpoint Bar & Direct Input */}
-      <div className="glass-card p-4 space-y-3 border-indigo-500/30">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-gray-300 font-medium">
-            <Globe className="w-4 h-4 text-cyan-400" />
-            <span>Backend API URL Target:</span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-              backendStatus === 'online' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
-              backendStatus === 'checking' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse' :
-              'bg-red-500/20 text-red-300 border-red-500/30'
-            }`}>
-              {backendStatus === 'online' ? '● Backend Online' : backendStatus === 'checking' ? 'Waking Up Server (~30s)...' : '⚠️ Server Asleep / Unreachable'}
-            </span>
-          </div>
-
-          <button 
-            onClick={() => pingBackend(activeApiUrl)} 
-            className="text-[11px] text-indigo-300 hover:underline flex items-center gap-1 shrink-0"
-          >
-            <RefreshCw className="w-3 h-3" /> Re-test Connection
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="https://your-backend-name.onrender.com"
-            value={customApiUrl}
-            onChange={(e) => handleSaveCustomUrl(e.target.value)}
-            className="flex-1 px-3.5 py-2 rounded-xl bg-gray-900 border border-white/10 text-xs text-cyan-300 font-mono focus:outline-none focus:border-indigo-500"
-          />
-          <a
-            href={`${activeApiUrl}/docs`}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/30 text-xs font-semibold shrink-0"
-          >
-            Open /docs (Wake Server)
-          </a>
-        </div>
       </div>
 
       {/* Upload Zone */}
