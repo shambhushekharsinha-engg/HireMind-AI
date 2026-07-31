@@ -1,7 +1,12 @@
 import os
 import re
 from typing import Dict, Any
-from pypdf import PdfReader
+
+try:
+    from pypdf import PdfReader
+    HAS_PYPDF = True
+except ImportError:
+    HAS_PYPDF = False
 
 try:
     import pdfplumber
@@ -33,14 +38,15 @@ class ResumeParser:
                 pass
         
         # Fallback to PyPDF
-        try:
-            reader = PdfReader(file_path)
-            for page in reader.pages:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted + "\n"
-        except Exception as e:
-            print(f"Error reading PDF: {e}")
+        if HAS_PYPDF:
+            try:
+                reader = PdfReader(file_path)
+                for page in reader.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
+            except Exception as e:
+                print(f"Error reading PDF: {e}")
             
         return text.strip()
 
