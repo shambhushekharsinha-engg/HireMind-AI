@@ -8,7 +8,8 @@ import {
   Sparkles, 
   RefreshCw,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Globe
 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
@@ -18,9 +19,16 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
   const [error, setError] = useState('');
   const [showRawText, setShowRawText] = useState(false);
 
+  const isLocalhostOnHttps = window.location.protocol === 'https:' && API_BASE_URL.includes('127.0.0.1');
+
   const handleUpload = async () => {
     if (!file) {
       setError('Please select a PDF or DOCX resume file.');
+      return;
+    }
+
+    if (isLocalhostOnHttps) {
+      setError(`Cannot call local server (${API_BASE_URL}) from a live HTTPS Vercel URL. Please add VITE_API_BASE_URL=https://your-backend.onrender.com to your Vercel Environment Variables and click Redeploy.`);
       return;
     }
 
@@ -46,7 +54,11 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
       if (onAnalysisComplete) onAnalysisComplete(data);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error communicating with backend server.');
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError(`Failed to connect to backend API at ${API_BASE_URL}. Ensure your backend service is running and CORS is enabled.`);
+      } else {
+        setError(err.message || 'Error communicating with backend server.');
+      }
     } finally {
       setLoading(false);
     }
@@ -79,6 +91,20 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
             <Download className="w-4 h-4" />
             Download PDF Report
           </button>
+        )}
+      </div>
+
+      {/* Active API Endpoint Indicator */}
+      <div className="glass-card p-3 px-4 flex items-center justify-between text-xs border-indigo-500/20">
+        <div className="flex items-center gap-2 text-gray-300 font-medium">
+          <Globe className="w-4 h-4 text-cyan-400" />
+          <span>Active Backend Target:</span>
+          <code className="px-2 py-0.5 rounded bg-gray-900 text-cyan-300 font-mono text-[11px]">{API_BASE_URL}</code>
+        </div>
+        {isLocalhostOnHttps && (
+          <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
+            ⚠️ Localhost URL on Live HTTPS Site
+          </span>
         )}
       </div>
 
@@ -124,9 +150,12 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
         </div>
 
         {error && (
-          <div className="p-3 bg-red-950/50 border border-red-500/30 rounded-xl text-xs text-red-300 flex items-center justify-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            {error}
+          <div className="p-4 bg-red-950/70 border border-red-500/40 rounded-xl text-xs text-red-200 leading-relaxed text-left space-y-1 shadow-lg">
+            <div className="font-bold text-red-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              API Connection Warning
+            </div>
+            <p>{error}</p>
           </div>
         )}
       </div>
