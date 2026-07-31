@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileUp, 
   CheckCircle2, 
@@ -9,26 +9,50 @@ import {
   RefreshCw,
   Layers,
   ChevronDown,
-  Globe
+  Globe,
+  Check
 } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL as CONFIG_API_URL } from '../config';
 
 export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setAnalysisData }) {
+  const [customApiUrl, setCustomApiUrl] = useState(() => {
+    return localStorage.getItem('hiremind_custom_api_url') || CONFIG_API_URL;
+  });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRawText, setShowRawText] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('checking');
 
-  const isLocalhostOnHttps = window.location.protocol === 'https:' && API_BASE_URL.includes('127.0.0.1');
+  const activeApiUrl = customApiUrl.replace(/\/$/, "");
+
+  const pingBackend = async (url) => {
+    setBackendStatus('checking');
+    try {
+      const target = url.replace(/\/$/, "");
+      const res = await fetch(`${target}/health`, { signal: AbortSignal.timeout(8000) });
+      if (res.ok) {
+        setBackendStatus('online');
+      } else {
+        setBackendStatus('offline');
+      }
+    } catch (e) {
+      setBackendStatus('offline');
+    }
+  };
+
+  useEffect(() => {
+    pingBackend(activeApiUrl);
+  }, [customApiUrl]);
+
+  const handleSaveCustomUrl = (newUrl) => {
+    setCustomApiUrl(newUrl);
+    localStorage.setItem('hiremind_custom_api_url', newUrl);
+  };
 
   const handleUpload = async () => {
     if (!file) {
       setError('Please select a PDF or DOCX resume file.');
-      return;
-    }
-
-    if (isLocalhostOnHttps) {
-      setError(`Cannot call local server (${API_BASE_URL}) from a live HTTPS Vercel URL. Please add VITE_API_BASE_URL=https://your-backend.onrender.com to your Vercel Environment Variables and click Redeploy.`);
       return;
     }
 
@@ -39,7 +63,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
     formData.append('file', file);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/resumes/upload`, {
+      const response = await fetch(`${activeApiUrl}/api/v1/resumes/upload`, {
         method: 'POST',
         body: formData
       });
@@ -55,7 +79,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
     } catch (err) {
       console.error(err);
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError(`Failed to connect to backend API at ${API_BASE_URL}. Ensure your backend service is running and CORS is enabled.`);
+        setError(`Failed to fetch from ${activeApiUrl}. Ensure the URL is correct, includes 'https://', and Render backend service is running.`);
       } else {
         setError(err.message || 'Error communicating with backend server.');
       }
@@ -69,7 +93,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
       alert('Analysis ID missing. Please analyze a resume first.');
       return;
     }
-    window.open(`${API_BASE_URL}/api/v1/reports/download/${analysisData.analysis_id}`, '_blank');
+    window.open(`${activeApiUrl}/api/v1/reports/download/${analysisData.analysis_id}`, '_blank');
   };
 
   return (
@@ -94,18 +118,38 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
         )}
       </div>
 
-      {/* Active API Endpoint Indicator */}
-      <div className="glass-card p-3 px-4 flex items-center justify-between text-xs border-indigo-500/20">
-        <div className="flex items-center gap-2 text-gray-300 font-medium">
-          <Globe className="w-4 h-4 text-cyan-400" />
-          <span>Active Backend Target:</span>
-          <code className="px-2 py-0.5 rounded bg-gray-900 text-cyan-300 font-mono text-[11px]">{API_BASE_URL}</code>
+      {/* Active API Endpoint Bar & Direct Input */}
+      <div className="glass-card p-4 space-y-3 border-indigo-500/30">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-gray-300 font-medium">
+            <Globe className="w-4 h-4 text-cyan-400" />
+            <span>Backend API URL Target:</span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+              backendStatus === 'online' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+              backendStatus === 'checking' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse' :
+              'bg-red-500/20 text-red-300 border-red-500/30'
+            }`}>
+              {backendStatus === 'online' ? '● Backend Online' : backendStatus === 'checking' ? 'Testing Connection...' : '⚠️ Unreachable'}
+            </span>
+          </div>
+
+          <button 
+            onClick={() => pingBackend(activeApiUrl)} 
+            className="text-[11px] text-indigo-300 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <RefreshCw className="w-3 h-3" /> Re-test Connection
+          </button>
         </div>
-        {isLocalhostOnHttps && (
-          <span className="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
-            ⚠️ Localhost URL on Live HTTPS Site
-          </span>
-        )}
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="https://your-backend-name.onrender.com"
+            value={customApiUrl}
+            onChange={(e) => handleSaveCustomUrl(e.target.value)}
+            className="flex-1 px-3.5 py-2 rounded-xl bg-gray-900 border border-white/10 text-xs text-cyan-300 font-mono focus:outline-none focus:border-indigo-500"
+          />
+        </div>
       </div>
 
       {/* Upload Zone */}
@@ -153,7 +197,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
           <div className="p-4 bg-red-950/70 border border-red-500/40 rounded-xl text-xs text-red-200 leading-relaxed text-left space-y-1 shadow-lg">
             <div className="font-bold text-red-300 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-              API Connection Warning
+              API Connection Error
             </div>
             <p>{error}</p>
           </div>

@@ -21,15 +21,6 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Process timing middleware for performance observability
 @app.middleware("http")
 async def add_performance_header(request: Request, call_next):
@@ -38,6 +29,16 @@ async def add_performance_header(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time-Sec"] = f"{process_time:.4f}"
     return response
+
+# CORS Middleware (MUST BE ADDED LAST SO IT WRAPS ALL RESPONSES AND PREFLIGHT OPTIONS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
 
 # Serve static reports
 app.mount("/generated_reports", StaticFiles(directory=settings.REPORTS_DIR), name="reports")
