@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hiremind_postgres
+    environment:
+      POSTGRES_USER: hiremind
+      POSTGRES_PASSWORD: hiremind_secret_pass
+      POSTGRES_DB: hiremind_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hiremind"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hiremind_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    container_name: hiremind_backend
+    environment:
+      DATABASE_URL: postgresql://hiremind:hiremind_secret_pass@postgres:5432/hiremind_db
+      SECRET_KEY: hiremind_ai_super_secret_jwt_key_2026_production
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    container_name: hiremind_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

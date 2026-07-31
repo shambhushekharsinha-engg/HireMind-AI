@@ -1,0 +1,26 @@
+# Python & Virtualenv
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+.env
+
+# Database & Uploads
+*.db
+hiremind.db
+uploads/
+generated_reports/
+backend/uploads/
+backend/generated_reports/
+
+# Node.js & React
+node_modules/
+dist/
+.npm/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

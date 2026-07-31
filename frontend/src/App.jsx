@@ -1,201 +1,123 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import DashboardPage from './pages/DashboardPage';
+import ATSAnalyzerPage from './pages/ATSAnalyzerPage';
+import JobMatcherPage from './pages/JobMatcherPage';
+import CareerRoadmapPage from './pages/CareerRoadmapPage';
+import InterviewPrepPage from './pages/InterviewPrepPage';
+import BulletRewriterPage from './pages/BulletRewriterPage';
+import RecruiterPage from './pages/RecruiterPage';
+import HistoryPage from './pages/HistoryPage';
+import ResumeBuilderPage from './pages/ResumeBuilderPage';
+import ApplicationTrackerPage from './pages/ApplicationTrackerPage';
+import CoachPage from './pages/CoachPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
-function App() {
+import PortfolioGeneratorPage from './pages/PortfolioGeneratorPage';
+import CoverLetterPage from './pages/CoverLetterPage';
+import LinkedInOptimizerPage from './pages/LinkedInOptimizerPage';
+import VersionComparePage from './pages/VersionComparePage';
+import GitHubAnalyzerPage from './pages/GitHubAnalyzerPage';
+import CompanyInsightsPage from './pages/CompanyInsightsPage';
 
-  const [file, setFile] = useState(null);
+export default function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [latestAnalysis, setLatestAnalysis] = useState(null);
 
-  const [resumeText, setResumeText] = useState("");
-
-  const [skills, setSkills] = useState([]);
-
-  const [score, setScore] = useState(0);
-
-  const [missingSkills, setMissingSkills] = useState([]);
-  
-  const [suggestions, setSuggestions] = useState([]);
-
-  const [message, setMessage] = useState("");
-
-  const [matchScore, setMatchScore] = useState(0);
-
-  const [strengths, setStrengths] = useState([]);
-
-  const [careerSuggestions, setCareerSuggestions] = useState([]);
-
-  const [rating, setRating] = useState("");
-
-  const handleUpload = async () => {
-
-    if (!file) {
-      alert("Please select a PDF resume");
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("file", file);
-
-    try {
-
-      const response = await fetch(
-        "http://localhost:8000/upload-resume/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-
-      setResumeText(data.resume_text);
-
-      setSkills(data.skills_found);
-
-      setScore(data.ats_score);
-
-      setMatchScore(data.job_match_score);
-
-      setStrengths(data.strengths);
-
-      setMissingSkills(data.missing_skills);
-
-      setSuggestions(data.suggestions);
-
-      setCareerSuggestions(data.career_suggestions);
-
-      setRating(data.rating);
-
-      setMessage(data.message);
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert("Upload failed");
-    }
+  const handleAnalysisComplete = (data) => {
+    setLatestAnalysis(data);
   };
 
   return (
+    <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Top Navbar */}
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
+      {/* Main Layout Container */}
+      <div className="flex flex-1">
+        {/* Left Sidebar */}
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <h1>HireMind AI Resume Analyzer</h1>
+        {/* Main Content Area */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+          {activeTab === 'dashboard' && (
+            <DashboardPage setActiveTab={setActiveTab} latestAnalysis={latestAnalysis} />
+          )}
 
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
+          {activeTab === 'builder' && (
+            <ResumeBuilderPage />
+          )}
 
-      <br /><br />
+          {activeTab === 'ats' && (
+            <ATSAnalyzerPage 
+              onAnalysisComplete={handleAnalysisComplete} 
+              analysisData={latestAnalysis} 
+              setAnalysisData={setLatestAnalysis} 
+            />
+          )}
 
-      <button onClick={handleUpload}>
-        Upload Resume
-      </button>
+          {activeTab === 'job-matcher' && (
+            <JobMatcherPage latestAnalysis={latestAnalysis} />
+          )}
 
-      <br /><br />
-      <h3>{message}</h3>
-     <div>
-  <h2
-    style={{
-      color:
-        score >= 80
-          ? "green"
-          : score >= 60
-          ? "orange"
-          : "red",
-    }}
-  >
-    ATS Resume Score: {score}/100
-  </h2>
+          {activeTab === 'tracker' && (
+            <ApplicationTrackerPage />
+          )}
 
-  <progress
-    value={score}
-    max="100"
-    style={{ width: "400px", height: "25px" }}
-  />
-</div>
+          {activeTab === 'portfolio' && (
+            <PortfolioGeneratorPage latestAnalysis={latestAnalysis} />
+          )}
 
-<br />
+          {activeTab === 'cover-letter' && (
+            <CoverLetterPage latestAnalysis={latestAnalysis} />
+          )}
 
-<div>
-  <h2>
-    Job Match Score: {matchScore}%
-  </h2>
+          {activeTab === 'linkedin' && (
+            <LinkedInOptimizerPage />
+          )}
 
-  <progress
-    value={matchScore}
-    max="100"
-    style={{ width: "400px", height: "25px" }}
-  />
-</div>
+          {activeTab === 'version-compare' && (
+            <VersionComparePage />
+          )}
 
-      <h2>Detected Skills</h2>
+          {activeTab === 'github' && (
+            <GitHubAnalyzerPage />
+          )}
 
-      <div>
-  {skills.map((skill, index) => (
-    <span
-      key={index}
-      style={{
-        margin: "5px",
-        padding: "8px",
-        border: "1px solid black",
-        borderRadius: "10px",
-        display: "inline-block"
-      }}
-    >
-      {skill}
-    </span>
-  ))}
-</div>
-      
-      <h2>Missing Skills</h2>
+          {activeTab === 'company' && (
+            <CompanyInsightsPage />
+          )}
 
-      <ul>
-        {missingSkills.map((skill, index) => (
-           <li key={index}>{skill}</li>
-      ))}
-    </ul>
+          {activeTab === 'coach' && (
+            <CoachPage />
+          )}
 
-      <h2>Resume Suggestions</h2>
+          {activeTab === 'roadmap' && (
+            <CareerRoadmapPage latestAnalysis={latestAnalysis} />
+          )}
 
-      <ul>
-        {suggestions.map((item, index) => (
-           <li key={index}>{item}</li>
-      ))}
-    </ul>
+          {activeTab === 'interview' && (
+            <InterviewPrepPage latestAnalysis={latestAnalysis} />
+          )}
 
-      <h2> Recommended Career Suggestions </h2>
+          {activeTab === 'rewriter' && (
+            <BulletRewriterPage />
+          )}
 
-      <ul>
-        {careerSuggestions.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
+          {activeTab === 'recruiter' && (
+            <RecruiterPage />
+          )}
 
-      <h2>{rating}</h2>
+          {activeTab === 'analytics' && (
+            <AnalyticsPage />
+          )}
 
-      <h2>Resume Strengths</h2>
-
-      <ul>
-        {strengths.map((item, index) => (
-           <li key={index}>{item}</li>
-      ))}
-    </ul>
-
-      <details>
-    <summary>View Extracted Resume Text</summary>
-
-    <textarea
-    rows="20"
-    cols="100"
-    value={resumeText}
-    readOnly
-   />
-
-  </details>
-
+          {activeTab === 'history' && (
+            <HistoryPage />
+          )}
+        </main>
+      </div>
     </div>
   );
 }
-
-export default App;
