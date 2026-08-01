@@ -38,39 +38,44 @@ class MultiDomainInterviewSimulator:
 
         questions = [
             {
-                "id": "q1",
-                "domain": "Technical",
-                "question": "How do you optimize asynchronous database queries in FastAPI when scaling to 10,000 requests per second?",
+                "id": 1,
+                "category": "Technical Architecture",
+                "question": f"How do you optimize asynchronous database queries in FastAPI when scaling a {target_role} platform to 10,000 requests per second?",
                 "target_timer_sec": personality["target_timer_sec"],
-                "follow_up": "What specific index type would you use for composite column filters?",
+                "hints": ["Consider connection pooling", "Use indexing and caching"],
+                "key_points_expected": ["Async connection pool", "Composite database indexes", "Caching with Redis"],
             },
             {
-                "id": "q2",
-                "domain": "HR",
-                "question": "Why are you interested in transitioning into an Enterprise Engineering role at our company?",
+                "id": 2,
+                "category": "HR & Culture Fit",
+                "question": f"Why are you interested in advancing your career as a {target_role} at our company?",
                 "target_timer_sec": 60,
-                "follow_up": "How does your career goal align with our 3-year technology roadmap?",
+                "hints": ["Focus on growth goals", "Mention technology alignment"],
+                "key_points_expected": ["Career path alignment", "Technical growth", "Product vision interest"],
             },
             {
-                "id": "q3",
-                "domain": "Behavioral",
+                "id": 3,
+                "category": "Behavioral Scenario",
                 "question": "Describe a situation where a critical database migration failed in production. How did you handle post-mortem and communication?",
                 "target_timer_sec": 90,
-                "follow_up": "What automated checks did you add to prevent recurrence?",
+                "hints": ["Use STAR method", "Highlight preventive measures"],
+                "key_points_expected": ["Root cause analysis", "Incident response", "Automated regression testing"],
             },
             {
-                "id": "q4",
-                "domain": "Project Discussion",
+                "id": 4,
+                "category": "Project Discussion",
                 "question": f"Walk us through the architecture of your top project utilizing {skills_str}. What trade-offs did you make?",
                 "target_timer_sec": 90,
-                "follow_up": "If you had 10x traffic tomorrow, which component breaks first?",
+                "hints": ["Discuss microservices vs monolith", "Explain data flow"],
+                "key_points_expected": ["Component decoupling", "Trade-off justification", "Scalability bottlenecks"],
             },
             {
-                "id": "q5",
-                "domain": "Resume Discussion",
-                "question": "Can you elaborate on the microservice optimization bullet point listed under your recent experience?",
+                "id": 5,
+                "category": "Resume Deep-Dive",
+                "question": "Can you elaborate on your experience optimizing latency and backend API performance?",
                 "target_timer_sec": 60,
-                "follow_up": "How did you measure the 30% throughput increase?",
+                "hints": ["Mention concrete metrics", "Explain profiling tools"],
+                "key_points_expected": ["Quantified performance boost", "Profiling techniques", "Code refactoring"],
             },
         ]
 
@@ -81,6 +86,13 @@ class MultiDomainInterviewSimulator:
             "question_blueprint": questions,
             "questions": [q["question"] for q in questions],
         }
+
+    @classmethod
+    def generate_formatted_questions(
+        cls, target_role: str = "Backend Engineer", resume_text: str = None
+    ) -> List[Dict[str, Any]]:
+        bp = cls.generate_interview_blueprint(target_role)
+        return bp["question_blueprint"]
 
     @classmethod
     def generate_questions(cls, target_role: str = "Backend Engineer", resume_text: str = None) -> List[str]:
@@ -109,6 +121,8 @@ class MultiDomainInterviewSimulator:
                     "latency",
                     "sub-50ms",
                     "throughput",
+                    "fastapi",
+                    "python",
                 ]
             )
             else 65.0
