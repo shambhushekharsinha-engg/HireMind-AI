@@ -34,14 +34,14 @@ Base.metadata.create_all(bind=engine)
 
 def auto_migrate_schema():
     """
-    Automatically ensures all expected columns exist in PostgreSQL/SQLite tables.
+    Automatically ensures all expected columns exist across all PostgreSQL/SQLite tables.
     Prevents psycopg2.errors.UndefinedColumn on production database upgrades.
     """
     try:
         with engine.begin() as conn:
             dialect_name = engine.dialect.name
             if dialect_name in ["postgresql", "postgres"]:
-                # PostgreSQL ALTER TABLE ADD COLUMN IF NOT EXISTS
+                # 1. Resumes Table
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id INTEGER;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS title VARCHAR DEFAULT 'Main Resume';"))
                 conn.execute(
@@ -56,31 +56,111 @@ def auto_migrate_schema():
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS raw_text TEXT;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS parsed_sections JSONB;"))
 
+                # 2. Resume Revisions Table
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS resume_id INTEGER;"))
+                conn.execute(
+                    text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS version_number INTEGER DEFAULT 1;")
+                )
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS filename VARCHAR;"))
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS file_path VARCHAR;"))
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS raw_text TEXT;"))
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS parsed_sections JSONB;"))
                 conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS content_hash VARCHAR;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+                    )
+                )
                 conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+
+                # 3. Resume Analyses Table
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS resume_id INTEGER;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS revision_id INTEGER;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS ats_score FLOAT;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS rating VARCHAR;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS skills_found JSONB;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS missing_skills JSONB;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS strengths JSONB;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS suggestions JSONB;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS section_scores JSONB;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS report_path VARCHAR;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+                    )
+                )
                 conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+
+                # 4. Job Applications Table
+                conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS user_id INTEGER;"))
+                conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS company_name VARCHAR;"))
+                conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS job_title VARCHAR;"))
+                conn.execute(
+                    text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS status VARCHAR DEFAULT 'Applied';")
+                )
+                conn.execute(
+                    text(
+                        "ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS applied_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+                    )
+                )
+                conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS notes TEXT;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+                    )
+                )
+                conn.execute(
+                    text(
+                        "ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+                    )
+                )
+                conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
             else:
                 # SQLite PRAGMA table_info check & ADD COLUMN
-                res = conn.execute(text("PRAGMA table_info(resumes);")).fetchall()
-                cols = [r[1] for r in res]
-                if "user_id" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN user_id INTEGER;"))
-                if "title" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN title VARCHAR DEFAULT 'Main Resume';"))
-                if "created_at" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN created_at DATETIME;"))
-                if "updated_at" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN updated_at DATETIME;"))
-                if "deleted_at" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN deleted_at DATETIME;"))
-                if "filename" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN filename VARCHAR;"))
-                if "file_path" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN file_path VARCHAR;"))
-                if "raw_text" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN raw_text TEXT;"))
-                if "parsed_sections" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN parsed_sections JSON;"))
+                tables_to_check = {
+                    "resumes": [
+                        ("user_id", "INTEGER"),
+                        ("title", "VARCHAR DEFAULT 'Main Resume'"),
+                        ("created_at", "DATETIME"),
+                        ("updated_at", "DATETIME"),
+                        ("deleted_at", "DATETIME"),
+                        ("filename", "VARCHAR"),
+                        ("file_path", "VARCHAR"),
+                        ("raw_text", "TEXT"),
+                        ("parsed_sections", "JSON"),
+                    ],
+                    "resume_revisions": [
+                        ("resume_id", "INTEGER"),
+                        ("version_number", "INTEGER DEFAULT 1"),
+                        ("filename", "VARCHAR"),
+                        ("file_path", "VARCHAR"),
+                        ("raw_text", "TEXT"),
+                        ("parsed_sections", "JSON"),
+                        ("content_hash", "VARCHAR"),
+                        ("created_at", "DATETIME"),
+                        ("deleted_at", "DATETIME"),
+                    ],
+                    "resume_analyses": [
+                        ("resume_id", "INTEGER"),
+                        ("revision_id", "INTEGER"),
+                        ("ats_score", "FLOAT"),
+                        ("rating", "VARCHAR"),
+                        ("skills_found", "JSON"),
+                        ("missing_skills", "JSON"),
+                        ("strengths", "JSON"),
+                        ("suggestions", "JSON"),
+                        ("section_scores", "JSON"),
+                        ("report_path", "VARCHAR"),
+                        ("created_at", "DATETIME"),
+                        ("deleted_at", "DATETIME"),
+                    ],
+                }
+                for table, cols_def in tables_to_check.items():
+                    res = conn.execute(text(f"PRAGMA table_info({table});")).fetchall()
+                    existing_cols = [r[1] for r in res]
+                    for col_name, col_type in cols_def:
+                        if col_name not in existing_cols:
+                            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type};"))
     except Exception as e:
         logger.warning(f"Auto-migration notice: {e}")
 
