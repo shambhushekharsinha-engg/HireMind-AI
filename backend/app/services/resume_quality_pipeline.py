@@ -64,28 +64,28 @@ class ResumeQualityPipeline:
         word_count = len(words)
         lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
 
-        # 1. Readability (Ideal length: 250 - 800 words)
-        if 250 <= word_count <= 800:
-            readability_score = 95.0
-        elif word_count < 250:
-            readability_score = min(90.0, (word_count / 250.0) * 90.0)
+        # 1. Readability (Fair scoring for both concise and detailed resumes)
+        if word_count >= 15:
+            readability_score = min(100.0, 75.0 + min(25.0, (word_count / 10.0)))
         else:
-            readability_score = max(50.0, 95.0 - ((word_count - 800) / 20.0))
+            readability_score = (word_count / 15.0) * 75.0
 
         # 2. Action Verbs
         found_verbs = [w.lower() for w in words if w.lower() in self.ACTION_VERBS]
         unique_verbs = len(set(found_verbs))
-        action_verb_score = min(100.0, (unique_verbs / 6.0) * 100.0)
+        action_verb_score = min(100.0, (unique_verbs / 3.0) * 100.0)
 
         # 3. Bullet Density
         bullet_lines = [
             line_str for line_str in lines if line_str.startswith(("-", "•", "*", "–")) or re.match(r"^\d+\.", line_str)
         ]
-        bullet_score = min(100.0, (len(bullet_lines) / max(len(lines) * 0.4, 1)) * 100.0)
+        bullet_score = min(100.0, (len(bullet_lines) / max(len(lines) * 0.3, 1)) * 100.0)
 
         # 4. Quantified Achievements ($ / % / throughput numbers)
-        metrics_found = re.findall(r"(\$\d+|\d+%\s*|\b\d+\s*(?:k|m|b|x|users|clients|percent)\b)", raw_text, re.I)
-        quantified_score = min(100.0, (len(metrics_found) / 4.0) * 100.0)
+        metrics_found = re.findall(
+            r"(\$\d+|\d+%\s*|\b\d+(?:,\d+)*(?:\.\d+)?\s*(?:k|m|b|x|users|clients|percent|requests)?\b)", raw_text, re.I
+        )
+        quantified_score = min(100.0, (len(metrics_found) / 2.0) * 100.0)
 
         # 5. Grammar Heuristics (Capitalization check on bullet beginnings)
         capitalized_lines = [line_str for line_str in lines if line_str[0].isupper()]
@@ -94,7 +94,7 @@ class ResumeQualityPipeline:
         # 6. Formatting Completeness (Required Sections)
         sections = parsed_sections or {}
         key_sections = ["summary", "skills", "experience", "education", "projects"]
-        present_count = sum(1 for s in key_sections if sections.get(s))
+        present_count = sum(1 for s in key_sections if sections.get(s) or s in raw_text.lower())
         formatting_score = min(100.0, (present_count / len(key_sections)) * 100.0)
 
         # Weighted Final Quality Score calculation

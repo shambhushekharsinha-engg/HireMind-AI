@@ -39,6 +39,7 @@ class MultiDomainInterviewSimulator:
         questions = [
             {
                 "id": 1,
+                "domain": "Technical",
                 "category": "Technical Architecture",
                 "question": f"How do you optimize asynchronous database queries in FastAPI when scaling a {target_role} platform to 10,000 requests per second?",
                 "target_timer_sec": personality["target_timer_sec"],
@@ -47,6 +48,7 @@ class MultiDomainInterviewSimulator:
             },
             {
                 "id": 2,
+                "domain": "HR",
                 "category": "HR & Culture Fit",
                 "question": f"Why are you interested in advancing your career as a {target_role} at our company?",
                 "target_timer_sec": 60,
@@ -55,6 +57,7 @@ class MultiDomainInterviewSimulator:
             },
             {
                 "id": 3,
+                "domain": "Behavioral",
                 "category": "Behavioral Scenario",
                 "question": "Describe a situation where a critical database migration failed in production. How did you handle post-mortem and communication?",
                 "target_timer_sec": 90,
@@ -63,6 +66,7 @@ class MultiDomainInterviewSimulator:
             },
             {
                 "id": 4,
+                "domain": "Project Discussion",
                 "category": "Project Discussion",
                 "question": f"Walk us through the architecture of your top project utilizing {skills_str}. What trade-offs did you make?",
                 "target_timer_sec": 90,
@@ -71,6 +75,7 @@ class MultiDomainInterviewSimulator:
             },
             {
                 "id": 5,
+                "domain": "Resume Discussion",
                 "category": "Resume Deep-Dive",
                 "question": "Can you elaborate on your experience optimizing latency and backend API performance?",
                 "target_timer_sec": 60,
