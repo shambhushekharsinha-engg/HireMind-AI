@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Sparkles, Shield, User, LogIn, LogOut } from 'lucide-react';
+import { Sparkles, Shield, User, LogIn, LogOut, Settings } from 'lucide-react';
 import AuthModal from './AuthModal';
+import ApiSettingsModal from './ApiSettingsModal';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showApiModal, setShowApiModal] = useState(false);
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('hiremind_user');
@@ -50,6 +52,15 @@ export default function Navbar({ activeTab, setActiveTab }) {
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           </div>
 
+          <button
+            onClick={() => setShowApiModal(true)}
+            className="p-2 rounded-xl text-xs bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/60 shadow-md transition flex items-center gap-1.5"
+            title="Backend API Connection Settings"
+          >
+            <Settings className="w-4 h-4 text-cyan-400 animate-spin-slow" />
+            <span className="hidden sm:inline font-semibold">API Server</span>
+          </button>
+
           {user ? (
             <div className="flex items-center gap-2">
               <div className="hidden sm:block text-right">
@@ -86,6 +97,11 @@ export default function Navbar({ activeTab, setActiveTab }) {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <ApiSettingsModal
+        isOpen={showApiModal}
+        onClose={() => setShowApiModal(false)}
       />
     </>
   );
