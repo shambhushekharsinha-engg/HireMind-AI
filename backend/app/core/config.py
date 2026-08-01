@@ -20,8 +20,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     PASSWORD_RESET_EXPIRE_MINUTES: int = 15
 
-    # Security & CORS
+    # Security & CORS Origins
     ALLOWED_ORIGINS: List[str] = [
+        "*",
+        "https://hiremind-ai-resume.vercel.app",
+        "https://*.vercel.app",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
