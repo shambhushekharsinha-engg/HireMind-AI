@@ -10,15 +10,13 @@ import {
   Layers,
   ChevronDown
 } from 'lucide-react';
-import { API_BASE_URL } from '../config';
+import { getApiBaseUrl } from '../config';
 
 export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setAnalysisData }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRawText, setShowRawText] = useState(false);
-
-  const activeApiUrl = API_BASE_URL.replace(/\/$/, "");
 
   const handleUpload = async () => {
     if (!file) {
@@ -28,6 +26,8 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
 
     setLoading(true);
     setError('');
+
+    const activeApiUrl = getApiBaseUrl();
 
     const formData = new FormData();
     formData.append('file', file);
@@ -55,6 +55,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
   };
 
   const handleDownloadPDF = () => {
+    const activeApiUrl = getApiBaseUrl();
     if (!analysisData || !analysisData.analysis_id) {
       alert('Analysis ID missing. Please analyze a resume first.');
       return;

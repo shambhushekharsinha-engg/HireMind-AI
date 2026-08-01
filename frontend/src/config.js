@@ -13,30 +13,19 @@ export const getApiBaseUrl = () => {
     }
   }
 
-  // 2. Vite Environment Variable VITE_API_BASE_URL
+  // 2. If running in browser on production Vercel deployment (non-localhost), ALWAYS default to live Render backend
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return "https://hiremind-ai-au7b.onrender.com";
+  }
+
+  // 3. Environment Variable VITE_API_BASE_URL (only if valid non-localhost URL)
   const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_API_BASE_URL : null;
-  if (envUrl && envUrl.trim()) {
+  if (envUrl && envUrl.trim() && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
     return envUrl.trim().replace(/\/$/, "");
   }
 
-  // 3. Localhost check (only if explicitly running on localhost or 127.0.0.1)
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return "http://127.0.0.1:8000";
-  }
-
-  // 4. Default for production Vercel deployment or build-time evaluation
-  return "https://hiremind-ai-au7b.onrender.com";
+  // 4. Default for local development
+  return "http://127.0.0.1:8000";
 };
 
-// Export API_BASE_URL object with dynamic toString() to guarantee runtime evaluation
-export const API_BASE_URL = {
-  toString() {
-    return getApiBaseUrl();
-  },
-  valueOf() {
-    return getApiBaseUrl();
-  },
-  replace(pattern, replacement) {
-    return getApiBaseUrl().replace(pattern, replacement);
-  }
-};
+export const API_BASE_URL = getApiBaseUrl();
