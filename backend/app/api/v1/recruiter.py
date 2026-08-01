@@ -1,8 +1,9 @@
 from typing import Optional
 
 from app.database.session import get_db
+from app.services.kaggle_dataset_trainer import KaggleDatasetTrainer
 from app.services.recruiter_service import RecruiterService
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/recruiter", tags=["Recruiter Candidate Portal"])
@@ -17,3 +18,13 @@ def get_candidates(
     skill_list = [s.strip() for s in skills.split(",") if s.strip()] if skills else None
     candidates = RecruiterService.search_candidates(db, skills=skill_list, min_ats=min_ats)
     return candidates
+
+
+@router.post("/kaggle-train")
+async def train_kaggle_dataset(file: UploadFile = File(...)):
+    """
+    Bulk ingest and train candidate resumes from Kaggle CSV dataset.
+    Extracts NLP skill vectors and indexes records into FAISS Vector Database.
+    """
+    content = await file.read()
+    return KaggleDatasetTrainer.train_from_csv_bytes(content)
