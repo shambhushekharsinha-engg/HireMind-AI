@@ -10,74 +10,6 @@
 
 ---
 
-## 👨‍💻 Developer Profile & Lead Architect Showcase
-
-> Engineered by a Lead AI Systems Architect focusing on scalable API design, deterministic machine learning pipelines, vector search RAG systems, and production-grade software engineering.
-
-### 👤 Lead Engineer Philosophy
-- **Role**: Lead Systems Architect & Senior AI Software Engineer
-- **Core Domain**: Enterprise Web Architecture, Deterministic ML Pipelines, Vector RAG Search Engines, Distributed API Systems, System Security, and CI/CD.
-- **Architectural Vision**: *"Beyond MVP into Software Engineering — Clean Repositories, Fail-Fast Reliability, Explainable AI, and Zero-Downtime Telemetry."*
-
-### 🚀 Technical Architectural Achievements (v3.0.0 Release Candidate)
-
-#### 1. Repository-Layer Database Isolation
-- Decoupled database operations into clean **Repository Classes**:
-  - `UserRepository`: User management, credential verification, reset tokens.
-  - `ResumeRepository`: Resume documents, revisions, ATS score history, builder drafts.
-  - `JobRepository`: Job descriptions, required skills matrix, candidate matching.
-  - `ApplicationRepository`: Job application tracking lifecycle.
-- **Alembic Database Migrations**: Automated schema version control with SQLite batch mode (`render_as_batch=True`).
-
-#### 2. Deterministic AI Quality Pipeline (Feature Engineering)
-- Replaced unexplainable ML models with a **5-Factor Feature Engineering Pipeline**:
-  - **Readability**: Flesch Reading Ease analysis.
-  - **Action Verbs**: Detection of high-impact executive verbs.
-  - **Bullet Density**: Bullet point structure and length optimization.
-  - **Quantified Achievements**: Detection of numerical metrics ($/%/x throughput).
-  - **Formatting Hygiene**: Clean section header detection and table avoidance.
-
-#### 3. FAISS Vector RAG Engine & Session Memory
-- **RAG Pipeline**: `Knowledge Base` $\rightarrow$ `Embedding Cache` $\rightarrow$ `FAISS Vector Store` $\rightarrow$ `RAG Prompt Builder` $\rightarrow$ `LLM` $\rightarrow$ `Answer Validator`.
-- **Session Memory**: Turn-by-turn conversation context history retaining previous user interactions for adaptive advice.
-
-#### 4. Internal Domain Event Dispatcher
-- In-memory publisher-subscriber event bus decoupling system services:
-  - `ResumeUploadedEvent` $\rightarrow$ `ResumeParsedEvent` $\rightarrow$ `ATSCalculatedEvent` $\rightarrow$ `ReportGeneratedEvent` $\rightarrow$ `NotificationSentEvent`.
-
-#### 5. Fail-Fast System Startup Validation
-- `StartupValidator` executes prior to accepting traffic:
-  - Secret Key presence and length check.
-  - Storage directories (`uploads/`, `generated_reports/`) writability.
-  - Database connectivity test (`SELECT 1`).
-  - spaCy NLP model loading.
-  - FAISS Vector Store readiness.
-
-#### 6. Centralized Standardized Error Catalog
-- Enforced `HM1000` series standardized error responses:
-  - `HM1001`: Resume text parsing failed.
-  - `HM1002`: File size exceeds upload limit.
-  - `HM1003`: Unsupported extension or MIME type.
-  - `HM2001`: Authentication failure.
-  - `HM3001`: Centralized AI Evaluation Engine error.
-  - `HM429`: Rate limit exceeded.
-
-#### 7. Advanced AI Feature Modules
-- **3-Option Selective Bullet Rewriter**: Detects weak bullets and provides `Professional`, `Executive`, and `Metrics-Driven` rewrite choices with Before/After/Reason structures.
-- **Timed Multi-Personality Interview Simulator**: Presets (`Strict Tech Lead`, `Supportive HR`, `VP of Engineering`), timer limits (60s/90s), dynamic follow-up questions, and 4D evaluation.
-- **Modular Portfolio Analyzer**: `GitHub Analyzer` + `LinkedIn Analyzer` + `Resume Analyzer` + `Project Analyzer` $\rightarrow$ `Overall Candidate Score`.
-- **Adaptive Personalized Roadmap Engine**: Dynamically adapts learning steps using current ATS score, target role, missing skills, and learning pace.
-- **AI Career Progress Dashboard**: Aggregates ATS trends, skill growth over time, interview performance, and overall career readiness.
-
-#### 8. System Security & Telemetry
-- **Security Middleware**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Content-Security-Policy`.
-- **Rate Limiter**: Token-bucket sliding-window rate limiter.
-- **Distributed Request Lifecycle Tracing**: `X-Trace-ID` and micro-span execution logging.
-- **Prometheus Telemetry**: `/metrics` endpoint and Operational Health Dashboard (`/health/dashboard`).
-- **Commit-Tagged Load Benchmarks**: Recorded load benchmark history (`benchmark_history.json`).
-
----
-
 ## 🧪 User Validation & Beta Testing Status
 
 > [!NOTE]
@@ -131,6 +63,21 @@ erDiagram
     RESUMES ||--o{ JOB_MATCHES : matched_in
     JOB_DESCRIPTIONS ||--o{ JOB_MATCHES : target_of
 ```
+
+---
+
+## 🚀 Key Software Engineering Highlights
+
+1. **Fail-Fast Startup Validation**: `StartupValidator` verifies Database connectivity, Secret keys, Storage permissions, spaCy model loading, and FAISS Vector Store readiness before server initialization.
+2. **Domain Event Dispatcher**: Decouples business logic via an in-memory event bus (`ResumeUploadedEvent` $\rightarrow$ `ResumeParsedEvent` $\rightarrow$ `ATSCalculatedEvent` $\rightarrow$ `ReportGeneratedEvent` $\rightarrow$ `NotificationSentEvent`).
+3. **Repository Pattern**: Entity repositories (`UserRepository`, `ResumeRepository`, `JobRepository`, `ApplicationRepository`) isolating database transactions from service logic.
+4. **Centralized Error Catalog**: Standardized error codes (`HM1000` series) across all HTTP error envelopes.
+5. **Deterministic Resume Quality Pipeline**: Feature engineering pipeline scoring Readability, Action Verbs, Bullet Density, Quantified Achievements, and Formatting Completeness.
+6. **3-Option Resume Rewriter**: Generates 3 distinct rewrite options (`Professional`, `Executive`, `Metrics-Driven`) per weak bullet point.
+7. **Timed Multi-Personality Interview Simulator**: Personality presets (`Strict Tech Lead`, `Supportive HR`, `VP of Engineering`), timer limits (60s/90s), dynamic follow-up questions, and 4D evaluation.
+8. **FAISS Vector RAG & Coach Memory**: Context-aware Career Coach with turn-by-turn conversation memory.
+9. **Operational Health Dashboard**: Comprehensive status dashboard at `/health/dashboard` inspecting Database, Storage, spaCy, Embedding Cache, Queue, and Vector Store.
+10. **Alembic Database Migrations**: Automated migration scripts with SQLite batch mode (`render_as_batch=True`).
 
 ---
 
@@ -199,6 +146,72 @@ pip install -r requirements.txt
 alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
+
+---
+
+## 👨‍💻 Developer Profile
+
+<div align="center">
+
+<br/>
+
+<img src="https://img.shields.io/badge/Developer-Shambhu%20Shekhar%20Sinha-00f0ff?style=for-the-badge&labelColor=010308" />
+
+<br/><br/>
+
+<table>
+  <tr>
+    <td align="center" width="100%">
+      <table>
+        <tr>
+          <td>👤 <b>Name</b></td>
+          <td>Shambhu Shekhar Sinha</td>
+        </tr>
+        <tr>
+          <td>🎓 <b>Degree</b></td>
+          <td>B.Tech — Computer Science & Engineering (AI & ML)</td>
+        </tr>
+        <tr>
+          <td>🏫 <b>College</b></td>
+          <td>Greater Noida Institute of Technology <b>(GNIOT)</b></td>
+        </tr>
+        <tr>
+          <td>🏛️ <b>University</b></td>
+          <td>Dr. APJ Abdul Kalam Technological University, Lucknow</td>
+        </tr>
+        <tr>
+          <td>📍 <b>Location</b></td>
+          <td>Greater Noida, Uttar Pradesh, India</td>
+        </tr>
+        <tr>
+          <td>🐙 <b>GitHub</b></td>
+          <td><a href="https://github.com/shambhushekharsinha-engg">@shambhushekharsinha-engg</a></td>
+        </tr>
+        <tr>
+          <td>🖥️ <b>Frontend Web App</b></td>
+          <td><a href="https://hiremind-ai-resume.vercel.app">hiremind-ai-resume.vercel.app</a></td>
+        </tr>
+        <tr>
+          <td>⚙️ <b>Backend REST API</b></td>
+          <td><a href="https://hiremind-ai-au7b.onrender.com">hiremind-ai-au7b.onrender.com</a></td>
+        </tr>
+        <tr>
+          <td>📖 <b>API Documentation</b></td>
+          <td><a href="https://hiremind-ai-au7b.onrender.com/docs">hiremind-ai-au7b.onrender.com/docs</a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<img src="https://img.shields.io/badge/B.Tech-CSE%20%7C%20AI%20%26%20ML-00f0ff?style=flat-square&labelColor=010308"/>
+<img src="https://img.shields.io/badge/GNIOT-Greater%20Noida%20Institute%20of%20Technology-10b981?style=flat-square"/>
+<img src="https://img.shields.io/badge/AKTU-Lucknow-FF4B4B?style=flat-square"/>
+<img src="https://img.shields.io/badge/GitHub-shambhushekharsinha--engg-181717?style=flat-square&logo=github"/>
+
+</div>
 
 ---
 
