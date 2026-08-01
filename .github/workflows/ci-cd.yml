@@ -48,11 +48,11 @@ jobs:
 
       - name: Execute Pytest Suite
         env:
-          PYTHONPATH: ./backend
+          PYTHONPATH: .
           ENVIRONMENT: testing
         run: |
           cd backend
-          pytest app/tests/ -v
+          python -m pytest app/tests/ -v
 
   docker-build:
     name: Container Build Check
