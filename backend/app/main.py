@@ -28,8 +28,45 @@ logger = logging.getLogger("hiremind")
 # Execute Fail-Fast Startup System Check
 run_startup_checks()
 
-# Initialize DB tables
+# Initialize DB tables & Run Auto Schema Migration for PostgreSQL / SQLite
 Base.metadata.create_all(bind=engine)
+
+
+def auto_migrate_schema():
+    """
+    Automatically ensures all expected columns exist in PostgreSQL/SQLite tables.
+    Prevents psycopg2.errors.UndefinedColumn on production database upgrades.
+    """
+    try:
+        with engine.begin() as conn:
+            dialect_name = engine.dialect.name
+            if dialect_name in ["postgresql", "postgres"]:
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS title VARCHAR DEFAULT 'Main Resume';"))
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS filename VARCHAR;"))
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS file_path VARCHAR;"))
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS raw_text TEXT;"))
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS parsed_sections JSONB;"))
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+            else:
+                res = conn.execute(text("PRAGMA table_info(resumes);")).fetchall()
+                cols = [r[1] for r in res]
+                if "title" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN title VARCHAR DEFAULT 'Main Resume';"))
+                if "filename" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN filename VARCHAR;"))
+                if "file_path" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN file_path VARCHAR;"))
+                if "raw_text" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN raw_text TEXT;"))
+                if "parsed_sections" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN parsed_sections JSON;"))
+                if "deleted_at" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN deleted_at DATETIME;"))
+    except Exception as e:
+        logger.warning(f"Auto-migration notice: {e}")
+
+
+auto_migrate_schema()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -234,7 +271,7 @@ def operational_health_dashboard():
     return {
         "overall_system_status": "healthy" if db_status == "healthy" and upload_ok and reports_ok else "degraded",
         "components": {
-            "database": {"status": db_status, "engine": "sqlite"},
+            "database": {"status": db_status, "engine": engine.dialect.name},
             "storage": {"upload_dir": upload_ok, "reports_dir": reports_ok},
             "spacy_nlp": {"loaded": nlp is not None, "model": "en_core_web_sm"},
             "embedding_cache": {"size": embedding_cache.size(), "status": "online"},
