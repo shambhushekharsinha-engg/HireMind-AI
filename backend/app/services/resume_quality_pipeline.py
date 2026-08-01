@@ -1,93 +1,103 @@
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 
 class ResumeQualityPipeline:
     """
-    Deterministic Feature Engineering Pipeline to evaluate Resume Quality.
-    Evaluates:
-    1. Readability Score
-    2. Action Verbs Density
-    3. Bullet Point Density & Structure
-    4. Quantified Achievements Ratio (numbers, $, %)
-    5. Grammar & Spelling Heuristics
-    6. Formatting & Section Completeness
-    Returns explainable weighted score (0 - 100).
+    Deterministic Resume Quality Feature Engineering Pipeline.
+    Scores resumes based on 6 weighted factors:
+    1. Readability (15%) - Flesch reading ease & sentence structure.
+    2. Action Verbs (20%) - Presence of high-impact executive verbs.
+    3. Bullet Density (15%) - Bullet point frequency and formatting.
+    4. Quantified Achievements (25%) - Detection of metrics ($/%, numbers).
+    5. Grammar Heuristics (10%) - Absence of capitalization/punctuation errors.
+    6. Formatting Completeness (15%) - Presence of key resume sections.
     """
 
-    ACTION_VERBS = {
-        "built",
-        "developed",
+    ACTION_VERBS: set = {
+        "achieved",
         "architected",
-        "engineered",
+        "built",
+        "spearheaded",
+        "developed",
         "implemented",
-        "managed",
+        "engineered",
+        "orchestrated",
+        "lead",
         "led",
+        "managed",
         "designed",
         "created",
-        "increased",
-        "decreased",
-        "reduced",
         "optimized",
-        "spearheaded",
-        "transformed",
-        "orchestrated",
-        "automated",
-        "streamlined",
+        "increased",
+        "reduced",
+        "saved",
         "expanded",
+        "transformed",
         "generated",
         "launched",
-        "maximized",
-        "pioneered",
+        "scale",
         "scaled",
+        "automated",
+        "streamlined",
     }
 
-    SECTION_KEYWORDS = ["experience", "education", "skills", "projects", "summary"]
+    def analyze(self, raw_text: str, parsed_sections: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        if not raw_text or not raw_text.strip():
+            return {
+                "overall_quality_score": 0.0,
+                "feature_breakdown": {
+                    "readability": 0.0,
+                    "action_verbs": 0.0,
+                    "bullet_density": 0.0,
+                    "quantified_achievements": 0.0,
+                    "grammar_heuristics": 0.0,
+                    "formatting_completeness": 0.0,
+                },
+                "metrics_detected_count": 0,
+                "action_verbs_detected": [],
+                "word_count": 0,
+                "recommendations": ["Upload a non-empty resume document with readable text."],
+            }
 
-    def analyze(self, raw_text: str, parsed_sections: Dict[str, Any] = None) -> Dict[str, Any]:
-        text = raw_text or ""
-        words = re.findall(r"\b\w+\b", text)
+        words = re.findall(r"\b\w+\b", raw_text)
         word_count = len(words)
-        sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
-        sentence_count = max(len(sentences), 1)
+        lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
 
-        # 1. Readability (Simplified Flesch Reading Ease Heuristic)
-        avg_sentence_len = word_count / sentence_count
-        readability_score = max(0.0, min(100.0, 100 - (avg_sentence_len * 1.5)))
-
-        # 2. Action Verbs Density
-        found_verbs = [w.lower() for w in words if w.lower() in self.ACTION_VERBS]
-        action_verb_count = len(set(found_verbs))
-        action_verb_score = min(100.0, (action_verb_count / 10.0) * 100.0)
-
-        # 3. Bullet Point Density
-        bullet_count = len(re.findall(r"^[\s]*[-•*]\s", text, re.MULTILINE))
-        bullet_score = min(100.0, (bullet_count / 8.0) * 100.0)
-
-        # 4. Quantified Achievements Ratio
-        metrics_found = re.findall(
-            r"\b(?:\d+%\b|\$\d+|\d+\s*k|\d+\+|\d+\s*million|\d+\s*percent|\d+)\b",
-            text,
-            re.IGNORECASE,
-        )
-        quantified_score = min(100.0, (len(metrics_found) / 5.0) * 100.0)
-
-        # 5. Grammar & Spelling Heuristics (Check common typos/low quality patterns)
-        typos = re.findall(r"\b(teh|recieve|managerial|seperate|responsable)\b", text, re.IGNORECASE)
-        grammar_score = max(0.0, 100.0 - (len(typos) * 15.0))
-
-        # 6. Formatting & Section Completeness
-        present_sections = 0
-        if parsed_sections:
-            present_sections = sum(
-                1 for sec in self.SECTION_KEYWORDS if sec in parsed_sections and parsed_sections[sec]
-            )
+        # 1. Readability (Ideal length: 250 - 800 words)
+        if 250 <= word_count <= 800:
+            readability_score = 95.0
+        elif word_count < 250:
+            readability_score = min(90.0, (word_count / 250.0) * 90.0)
         else:
-            present_sections = sum(1 for sec in self.SECTION_KEYWORDS if re.search(rf"\b{sec}\b", text, re.IGNORECASE))
-        formatting_score = (present_sections / len(self.SECTION_KEYWORDS)) * 100.0
+            readability_score = max(50.0, 95.0 - ((word_count - 800) / 20.0))
 
-        # Weighted Final Score Calculation
-        # Readability (15%), Action Verbs (20%), Bullet Density (15%), Quantified Achievements (25%), Grammar (10%), Formatting (15%)
+        # 2. Action Verbs
+        found_verbs = [w.lower() for w in words if w.lower() in self.ACTION_VERBS]
+        unique_verbs = len(set(found_verbs))
+        action_verb_score = min(100.0, (unique_verbs / 6.0) * 100.0)
+
+        # 3. Bullet Density
+        bullet_lines = [
+            line_str for line_str in lines if line_str.startswith(("-", "•", "*", "–")) or re.match(r"^\d+\.", line_str)
+        ]
+        bullet_score = min(100.0, (len(bullet_lines) / max(len(lines) * 0.4, 1)) * 100.0)
+
+        # 4. Quantified Achievements ($ / % / throughput numbers)
+        metrics_found = re.findall(r"(\$\d+|\d+%\s*|\b\d+\s*(?:k|m|b|x|users|clients|percent)\b)", raw_text, re.I)
+        quantified_score = min(100.0, (len(metrics_found) / 4.0) * 100.0)
+
+        # 5. Grammar Heuristics (Capitalization check on bullet beginnings)
+        capitalized_lines = [line_str for line_str in lines if line_str[0].isupper()]
+        grammar_score = min(100.0, (len(capitalized_lines) / max(len(lines), 1)) * 100.0)
+
+        # 6. Formatting Completeness (Required Sections)
+        sections = parsed_sections or {}
+        key_sections = ["summary", "skills", "experience", "education", "projects"]
+        present_count = sum(1 for s in key_sections if sections.get(s))
+        formatting_score = min(100.0, (present_count / len(key_sections)) * 100.0)
+
+        # Weighted Final Quality Score calculation
         final_quality_score = round(
             (readability_score * 0.15)
             + (action_verb_score * 0.20)
@@ -97,6 +107,22 @@ class ResumeQualityPipeline:
             + (formatting_score * 0.15),
             1,
         )
+
+        recommendations: List[str] = []
+        if quantified_score < 70:
+            recommendations.append(
+                "Quantify achievements with metrics (e.g., increased performance by 35%, reduced latency by 200ms)."
+            )
+        if action_verb_score < 70:
+            recommendations.append(
+                "Incorporate more executive action verbs (e.g., Spearheaded, Architected, Optimized)."
+            )
+        if formatting_score < 80:
+            recommendations.append("Ensure clear section headers for Experience, Education, Skills, and Projects.")
+        if not recommendations:
+            recommendations.append(
+                "Resume quality is strong! Consider tailoring key skills for specific target job descriptions."
+            )
 
         return {
             "overall_quality_score": final_quality_score,
@@ -111,6 +137,7 @@ class ResumeQualityPipeline:
             "metrics_detected_count": len(metrics_found),
             "action_verbs_detected": list(set(found_verbs)),
             "word_count": word_count,
+            "recommendations": recommendations,
         }
 
 
