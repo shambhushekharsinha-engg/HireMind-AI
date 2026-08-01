@@ -5,8 +5,25 @@
 [![React](https://img.shields.io/badge/React-v19.0-61DAFB.svg?style=flat&logo=react)](https://react.dev)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Developer Profile](https://img.shields.io/badge/Developer_Profile-Showcase-indigo.svg)](DEVELOPER_PROFILE.md)
 
 > **HireMind AI** is an enterprise-grade **Career Intelligence Operating System** built with clean software engineering principles. It features repository-layer database isolation, a deterministic feature-engineered resume quality pipeline, a FAISS vector store with RAG context retrieval, a lightweight internal domain event dispatcher, structured security and audit logging, Prometheus telemetry, fail-fast startup checks, and complete containerization.
+
+---
+
+## 👨‍💻 Developer Profile & System Architecture Showcase
+
+For a full breakdown of the system architecture, lead engineer bio, software design patterns, and core technical updates, refer to [DEVELOPER_PROFILE.md](DEVELOPER_PROFILE.md).
+
+### Architect Key Highlights
+- **Repository-Layer Data Access**: Decoupled database operations into `UserRepository`, `ResumeRepository`, `JobRepository`, and `ApplicationRepository`.
+- **Deterministic AI Quality Pipeline**: Feature engineering pipeline scoring Readability, Action Verbs, Bullet Density, Quantified Achievements, and Formatting Completeness.
+- **FAISS Vector RAG Engine & Session Memory**: Context-aware Career Coach with turn-by-turn conversation memory.
+- **Internal Domain Event Dispatcher**: Publisher-subscriber event bus decoupling system services (`ResumeUploadedEvent` $\rightarrow$ `ResumeParsedEvent` $\rightarrow$ `ATSCalculatedEvent` $\rightarrow$ `ReportGeneratedEvent` $\rightarrow$ `NotificationSentEvent`).
+- **Fail-Fast System Startup Validation**: `StartupValidator` inspecting Secret Keys, Storage permissions, Database connectivity, spaCy NLP model, and FAISS Vector Store before accepting traffic.
+- **Centralized Error Catalog**: Standardized `HM1000` series error handling (`HM1001` to `HM429`).
+- **Comprehensive AI Feature Modules**: 3-Option Selective Bullet Rewriter, Timed Multi-Personality Interview Simulator, Modular Portfolio Analyzer, Adaptive Learning Roadmap, and AI Career Progress Dashboard.
+- **46 Automated Tests**: 100% test pass rate across Unit, Integration, API, Security, Performance, and AI Pipeline categories.
 
 ---
 
@@ -114,6 +131,7 @@ HireMind-AI/
 ├── ARCHITECTURE.md              # In-depth System Architecture Document
 ├── CHANGELOG.md                 # Release Changelog
 ├── CONTRIBUTING.md              # Open-Source Contribution Guide
+├── DEVELOPER_PROFILE.md         # Developer Profile & Engineering Showcase
 ├── docker-compose.yml           # Multi-container local orchestration
 └── pyproject.toml               # Black, Ruff, and isort Configuration
 ```
@@ -152,4 +170,4 @@ uvicorn app.main:app --reload --port 8000
 ## 📄 License & Roadmap
 
 This project is licensed under the [MIT License](LICENSE).
-For detailed architecture explanations, refer to [ARCHITECTURE.md](ARCHITECTURE.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+For detailed architecture explanations, refer to [ARCHITECTURE.md](ARCHITECTURE.md), [DEVELOPER_PROFILE.md](DEVELOPER_PROFILE.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
