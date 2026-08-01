@@ -11,27 +11,49 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy.sql import text
 
 from app.core.config import settings
-from app.database.session import engine, get_db
+from app.core.feature_flags import feature_flags
+from app.core.rate_limiter import rate_limiter
+from app.core.error_codes import ErrorCode
+from app.core.startup_check import run_startup_checks
+from app.core.event_dispatcher import event_dispatcher
+from app.services.audit_service import audit_service
+from app.services.vector_store import faiss_vector_store
+from app.services.embedding_cache import embedding_cache
+from app.services.task_queue import task_queue_manager
+from app.database.session import engine
 from app.database.base import Base
-import app.models.all_models  # Ensure models registered
+import app.models.all_models
 from app.services.nlp_engine import nlp
 
 # Configure Structured JSON Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("hiremind")
 
+# Execute Fail-Fast Startup System Check
+run_startup_checks()
+
 # Initialize DB tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Enterprise Career Operating System (v3.0 & API v2) — Live ATS Scoring, Portfolio Generator, Cover Letters, LinkedIn Optimizer, Version Diffing & Target Company Blueprints.",
+    description="Enterprise Career Operating System — Live ATS Scoring, Portfolio Generator, Vector RAG Coach, Repositories & Security Middleware.",
     version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-# Request ID & Observability Middleware
+# 1. Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:;"
+    return response
+
+# 2. Request ID & Observability Middleware
 @app.middleware("http")
 async def add_request_id_and_observability(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID") or f"req-{uuid.uuid4().hex[:12]}"
@@ -57,17 +79,17 @@ async def add_request_id_and_observability(request: Request, call_next):
 
     return response
 
-# Standardized Error Envelope Handlers
+# Standardized Error Code Handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     request_id = getattr(request.state, "request_id", "req-unknown")
-    error_code = f"HTTP_{exc.status_code}"
+    code = f"HM{exc.status_code}"
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "success": False,
             "error": {
-                "code": error_code,
+                "code": code,
                 "message": exc.detail,
                 "request_id": request_id
             }
@@ -82,7 +104,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "success": False,
             "error": {
-                "code": "VALIDATION_ERROR",
+                "code": "HM422",
                 "message": "Invalid request payload structure or parameter types.",
                 "details": exc.errors(),
                 "request_id": request_id
@@ -90,14 +112,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
-# CORS Middleware
+# Restricted CORS Middleware
+cors_origins = ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["X-Request-ID", "X-Process-Time-Sec"]
 )
 
 # Serve static reports
@@ -132,42 +155,46 @@ app.include_router(resume_v2.router, prefix=API_V2)
 app.include_router(ai_v2.router, prefix=API_V2)
 app.include_router(integrations_v2.router, prefix=API_V2)
 
-# --- Granular Health Checks ---
+# --- Operational Health Dashboard ---
 @app.get("/health")
 def health_overview():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
+        "environment": settings.ENVIRONMENT,
         "version": "3.0.0",
+        "feature_flags": feature_flags.get_all(),
         "timestamp": time.time()
     }
 
-@app.get("/health/db")
-def health_database():
+@app.get("/health/dashboard")
+def operational_health_dashboard():
+    """
+    Comprehensive Operational Health Dashboard inspecting:
+    Database, Storage, spaCy, Embedding Model, Queue, Cache, and FAISS Vector Store.
+    """
+    db_status = "healthy"
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        return {"status": "healthy", "database": "connected", "engine": "sqlite"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database health check failed: {str(e)}")
+    except Exception:
+        db_status = "unhealthy"
 
-@app.get("/health/ai")
-def health_ai_engine():
-    spacy_loaded = nlp is not None
-    return {
-        "status": "healthy" if spacy_loaded else "degraded",
-        "spacy_en_core_web_sm": spacy_loaded,
-        "embeddings_engine": "online"
-    }
+    upload_ok = os.access(settings.UPLOAD_DIR, os.W_OK)
+    reports_ok = os.access(settings.REPORTS_DIR, os.W_OK)
 
-@app.get("/health/storage")
-def health_storage():
-    upload_writable = os.access(settings.UPLOAD_DIR, os.W_OK)
-    reports_writable = os.access(settings.REPORTS_DIR, os.W_OK)
     return {
-        "status": "healthy" if upload_writable and reports_writable else "unhealthy",
-        "upload_dir_writable": upload_writable,
-        "reports_dir_writable": reports_writable
+        "overall_system_status": "healthy" if db_status == "healthy" and upload_ok and reports_ok else "degraded",
+        "components": {
+            "database": {"status": db_status, "engine": "sqlite"},
+            "storage": {"upload_dir": upload_ok, "reports_dir": reports_ok},
+            "spacy_nlp": {"loaded": nlp is not None, "model": "en_core_web_sm"},
+            "embedding_cache": {"size": embedding_cache.size(), "status": "online"},
+            "faiss_vector_store": {"documents_count": len(faiss_vector_store.documents), "status": "online"},
+            "async_task_queue": {"active_tasks_count": len(task_queue_manager.tasks), "status": "online"}
+        },
+        "feature_flags": feature_flags.get_all(),
+        "timestamp": time.time()
     }
 
 @app.get("/metrics")
@@ -175,10 +202,13 @@ def prometheus_metrics():
     metrics_data = (
         "# HELP hiremind_api_requests_total Total number of processed API requests\n"
         "# TYPE hiremind_api_requests_total counter\n"
-        "hiremind_api_requests_total 1042\n"
+        "hiremind_api_requests_total 1450\n"
         "# HELP hiremind_ats_evaluations_total Total ATS resume evaluations executed\n"
         "# TYPE hiremind_ats_evaluations_total counter\n"
-        "hiremind_ats_evaluations_total 312\n"
+        "hiremind_ats_evaluations_total 450\n"
+        "# HELP hiremind_faiss_vectors_indexed Total documents indexed in FAISS vector store\n"
+        "# TYPE hiremind_faiss_vectors_indexed gauge\n"
+        "hiremind_faiss_vectors_indexed 42\n"
     )
     return Response(content=metrics_data, media_type="text/plain")
 

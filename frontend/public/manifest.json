@@ -1,0 +1,16 @@
+{
+  "short_name": "HireMind AI",
+  "name": "HireMind AI – Enterprise Career Operating System",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0b0f19",
+  "description": "Enterprise Career Operating System powered by AI Resume Quality Engineering, FAISS Vector RAG, and Live ATS Analytics."
+}

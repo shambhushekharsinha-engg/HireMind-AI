@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hiremind-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=sqlite:///./hiremind.db
+      - SECRET_KEY=hiremind_ai_super_secret_jwt_key_2026_production
+      - FLAG_EXPERIMENTAL_AI=true
+      - FLAG_FAISS_VECTOR_SEARCH=true
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/generated_reports:/app/generated_reports
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hiremind-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend

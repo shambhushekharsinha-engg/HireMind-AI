@@ -1,4 +1,6 @@
 import os
+from typing import List, Union
+
 try:
     from pydantic_settings import BaseSettings
 except ImportError:
@@ -6,15 +8,24 @@ except ImportError:
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "HireMind AI – Enterprise Career Intelligence Platform"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development") # development, testing, production
     API_V1_STR: str = "/api/v1"
     API_V2_STR: str = "/api/v2"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "hiremind_ai_super_secret_jwt_key_2026_production")
     ALGORITHM: str = "HS256"
     
     # Dual-Token JWT Config
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # 15 minutes access token
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7      # 7 days refresh token
-    PASSWORD_RESET_EXPIRE_MINUTES: int = 15 # 15 minutes reset token expiry
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 15
+    
+    # Security & CORS
+    ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ]
     
     # Upload Security Limits
     MAX_FILE_SIZE_MB: int = 10

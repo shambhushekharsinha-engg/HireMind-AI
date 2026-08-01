@@ -1,52 +1,72 @@
 import re
-from typing import Dict, Any, List
+from typing import List, Dict, Any
 
-ACTION_VERB_MAP = {
-    "built": "Engineered and deployed",
-    "made": "Architected and delivered",
-    "used": "Leveraged cutting-edge",
-    "worked": "Spearheaded cross-functional effort on",
-    "helped": "Collaborated to optimize",
-    "changed": "Refactored and modernized",
-    "added": "Integrated scalable",
-    "created": "Pioneered the development of"
-}
+class SelectiveResumeRewriter:
+    """
+    Selective Resume Bullet Rewriter returning 3 distinct rewrite options:
+    1. Professional Option
+    2. Executive Option
+    3. Metrics-Driven / Technical Option
+    Includes Before, After, Reason, and Accept/Reject status structures for full user control.
+    """
 
-class ResumeRewriter:
+    WEAK_PATTERNS = [
+        r"\bworked on\b", r"\bresponsible for\b", r"\bhelped with\b", r"\bassisted in\b", r"\bhandled\b"
+    ]
 
     @classmethod
-    def rewrite_bullet(cls, original_bullet: str, target_role: str = "Software Engineer") -> Dict[str, Any]:
-        bullet = original_bullet.strip()
-        words = bullet.split()
+    def rewrite_bullets(cls, bullet_points: List[str]) -> Dict[str, Any]:
+        results = []
+        rewritten_count = 0
 
-        if not bullet:
-            return {
-                "original": "",
-                "rewritten_options": ["Please enter a bullet point to rewrite."],
-                "action_verbs_used": [],
-                "impact_score_boost": "+0%"
-            }
+        for bullet in bullet_points:
+            is_weak = any(re.search(pat, bullet, re.IGNORECASE) for pat in cls.WEAK_PATTERNS) or not re.search(r"\d", bullet)
 
-        first_word = words[0].lower() if words else ""
-        verb_replacement = ACTION_VERB_MAP.get(first_word, "Spearheaded and engineered")
-
-        # Option 1: Action Verb + Context Enhancement
-        if first_word in ACTION_VERB_MAP:
-            option1 = f"{verb_replacement} {' '.join(words[1:])}, boosting system efficiency and reliability."
-        else:
-            option1 = f"Engineered {bullet[0].lower() + bullet[1:] if len(bullet) > 1 else bullet}, enhancing overall performance and team productivity."
-
-        # Option 2: XYZ Formula with Quantifiable Metrics
-        option2 = f"{verb_replacement} {bullet.lower() if not bullet.isupper() else bullet}, achieving a 35% reduction in execution time and serving 10,000+ active users."
-
-        # Option 3: Modern Tech Stack Focus
-        option3 = f"Architected high-throughput scalable pipeline to {bullet.lower()}, reducing operational latency by 40% using industry best practices."
-
-        verbs_used = ["Engineered", "Architected", "Spearheaded", "Optimized"]
+            if is_weak:
+                rewritten_count += 1
+                cleaned = re.sub(r"\b(worked on|responsible for|helped with|assisted in|handled)\b", "", bullet, flags=re.IGNORECASE).strip()
+                cleaned = cleaned[0].upper() + cleaned[1:] if cleaned else "Built key features"
+                
+                option_professional = f"Engineered and maintained {cleaned}, improving overall team productivity."
+                option_executive = f"Spearheaded strategic initiative to deploy {cleaned}, driving key operational goals."
+                option_metrics = f"Architected and deployed {cleaned}, improving throughput by 35% and reducing latency by 40ms."
+                
+                results.append({
+                    "original": bullet,
+                    "is_weak": True,
+                    "reason": "Original bullet lacked strong action verbs and quantified impact metrics ($/%).",
+                    "options": {
+                        "professional": option_professional,
+                        "executive": option_executive,
+                        "metrics_driven": option_metrics
+                    },
+                    "recommended_option": option_metrics,
+                    "rewritten": option_metrics, # Default option for backward compatibility
+                    "status": "PROPOSED_REWRITE"
+                })
+            else:
+                results.append({
+                    "original": bullet,
+                    "is_weak": False,
+                    "reason": "Bullet point already contains strong action verbs and metrics.",
+                    "options": {
+                        "preserved": bullet
+                    },
+                    "recommended_option": bullet,
+                    "rewritten": bullet,
+                    "status": "PRESERVED"
+                })
 
         return {
-            "original": original_bullet,
-            "rewritten_options": [option1, option2, option3],
-            "action_verbs_used": verbs_used,
-            "impact_score_boost": "+45% ATS Visibility Boost"
+            "total_bullets_analyzed": len(bullet_points),
+            "weak_bullets_detected": rewritten_count,
+            "bullet_rewrites": results
         }
+
+    @classmethod
+    def rewrite_bullet(cls, bullet: str) -> str:
+        res = cls.rewrite_bullets([bullet])
+        return res["bullet_rewrites"][0]["rewritten"]
+
+ResumeRewriter = SelectiveResumeRewriter
+resume_rewriter = SelectiveResumeRewriter()

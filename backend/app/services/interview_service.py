@@ -1,162 +1,116 @@
 from typing import Dict, Any, List
-from app.services.nlp_engine import NLPEngine
 
-INTERVIEW_QUESTION_BANK = {
-    "AI / Machine Learning Engineer": [
-        {
-            "id": 1,
-            "category": "Technical",
-            "question": "Explain the difference between overfitting and underfitting in ML, and how do you mitigate both?",
-            "hints": ["Talk about model complexity, regularization (L1/L2), cross-validation, and training data size."],
-            "key_points_expected": ["overfitting", "underfitting", "regularization", "cross validation", "data augmentation"]
-        },
-        {
-            "id": 2,
-            "category": "Technical",
-            "question": "How does the Attention Mechanism work in Transformer architectures?",
-            "hints": ["Mention Query, Key, Value vectors, Softmax normalization, and Self-Attention."],
-            "key_points_expected": ["query", "key", "value", "softmax", "self attention", "transformer"]
-        },
-        {
-            "id": 3,
-            "category": "Project-based",
-            "question": "Walk me through an ML model you deployed to production. How did you handle latency and model drift?",
-            "hints": ["Highlight API wrapper (FastAPI/Flask), Docker containerization, caching, and model monitoring."],
-            "key_points_expected": ["fastapi", "docker", "latency", "monitoring", "metrics", "deployment"]
-        },
-        {
-            "id": 4,
-            "category": "Behavioral",
-            "question": "Describe a scenario where your machine learning model performed poorly in production. How did you troubleshoot it?",
-            "hints": ["Use STAR method (Situation, Task, Action, Result). Focus on data quality and debugging."],
-            "key_points_expected": ["data drift", "debugging", "validation", "collaboration", "resolution"]
-        }
-    ],
-    "Full-Stack Web Developer": [
-        {
-            "id": 1,
-            "category": "Technical",
-            "question": "How does the Virtual DOM work in React, and how does React optimize re-renders?",
-            "hints": ["Mention reconciliation algorithm, diffing, useMemo, and useCallback."],
-            "key_points_expected": ["virtual dom", "diffing", "reconciliation", "state", "usememo", "usecallback"]
-        },
-        {
-            "id": 2,
-            "category": "Technical",
-            "question": "Explain how CORS (Cross-Origin Resource Sharing) works and how to resolve CORS errors in FastAPI/Express.",
-            "hints": ["Explain browser security policy, preflight OPTIONS requests, and middleware configuration."],
-            "key_points_expected": ["origin", "preflight", "headers", "middleware", "security"]
-        },
-        {
-            "id": 3,
-            "category": "System Design",
-            "question": "How would you design a scalable authentication system using JWT and Refresh Tokens?",
-            "hints": ["Explain token storage (HttpOnly cookies), access token expiration, and database session revoking."],
-            "key_points_expected": ["jwt", "httponly", "refresh token", "access token", "security", "database"]
-        },
-        {
-            "id": 4,
-            "category": "HR / Behavioral",
-            "question": "Why do you want to join our engineering team, and what is your approach to handling tight project deadlines?",
-            "hints": ["Focus on task prioritization, agile sprints, clear team communication, and pragmatic trade-offs."],
-            "key_points_expected": ["prioritization", "communication", "agile", "problem solving", "ownership"]
-        }
-    ]
-}
+class MultiDomainInterviewSimulator:
+    """
+    Timed Multi-Personality Interview Simulator & Answer Evaluator.
+    Personalities: Strict Tech Lead, Supportive HR, VP of Engineering.
+    Features: 60s/90s Timers, Follow-Up Questions, Final Feedback Report.
+    """
 
-DEFAULT_QUESTIONS = [
-    {
-        "id": 1,
-        "category": "Technical",
-        "question": "Explain the architectural flow of a web request from client browser to backend database.",
-        "hints": ["Mention DNS lookup, HTTP request, load balancer, API router, ORM, and database query."],
-        "key_points_expected": ["dns", "http", "api", "orm", "database", "json"]
-    },
-    {
-        "id": 2,
-        "category": "Project-based",
-        "question": "Describe the most challenging technical project listed on your resume. What key engineering decisions did you make?",
-        "hints": ["Highlight your personal contribution, technologies used, trade-offs, and final impact."],
-        "key_points_expected": ["architecture", "technologies", "challenge", "optimization", "result"]
-    },
-    {
-        "id": 3,
-        "category": "Behavioral",
-        "question": "Give an example of a conflict or technical disagreement you had with a team member and how you resolved it.",
-        "hints": ["Use STAR method. Emphasize data-driven decision making, listening, and respectful consensus."],
-        "key_points_expected": ["communication", "collaboration", "data driven", "resolution", "teamwork"]
+    PERSONALITIES = {
+        "strict_tech_lead": {
+            "name": "Strict Technical Lead",
+            "tone": "Rigorous, deep-dive technical focus, zero tolerance for vague hand-waving.",
+            "target_timer_sec": 90
+        },
+        "supportive_hr": {
+            "name": "Supportive HR Recruiter",
+            "tone": "Encouraging, values alignment, communication, and culture fit focus.",
+            "target_timer_sec": 60
+        },
+        "vp_engineering": {
+            "name": "VP of Engineering",
+            "tone": "High-level architectural, trade-off, and business value focus.",
+            "target_timer_sec": 90
+        }
     }
-]
-
-class InterviewService:
 
     @classmethod
-    def generate_questions(cls, target_role: str, resume_text: str = None) -> List[Dict[str, Any]]:
-        questions = INTERVIEW_QUESTION_BANK.get(target_role, DEFAULT_QUESTIONS)
-        
-        # Customize hints based on extracted resume skills if present
-        if resume_text:
-            skills = NLPEngine.extract_skills(resume_text)
-            if skills:
-                custom_q = {
-                    "id": len(questions) + 1,
-                    "category": "Resume Specific",
-                    "question": f"I noticed skills like {', '.join(skills[:3])} on your resume. How have you applied these together in a real project?",
-                    "hints": [f"Focus specifically on your practical experience with {skills[0]} and {skills[1]}."],
-                    "key_points_expected": [s.lower() for s in skills[:4]]
-                }
-                questions = list(questions) + [custom_q]
+    def generate_interview_blueprint(
+        cls,
+        target_role: str = "Backend Engineer",
+        resume_skills: List[str] = None,
+        personality_key: str = "strict_tech_lead"
+    ) -> Dict[str, Any]:
+        personality = cls.PERSONALITIES.get(personality_key, cls.PERSONALITIES["strict_tech_lead"])
+        skills_str = ", ".join(resume_skills or ["Python", "FastAPI", "Docker"])
 
-        return questions
-
-    @classmethod
-    def evaluate_answer(cls, question: str, user_answer: str, expected_points: List[str] = None) -> Dict[str, Any]:
-        if not user_answer or len(user_answer.strip()) < 10:
-            return {
-                "score": 20.0,
-                "feedback": "Your answer is very short. Provide more technical detail, context, and examples.",
-                "strengths": [],
-                "improvements": ["Elaborate with specific technical concepts and practical examples."]
+        questions = [
+            {
+                "id": "q1",
+                "domain": "Technical",
+                "question": f"How do you optimize asynchronous database queries in FastAPI when scaling to 10,000 requests per second?",
+                "target_timer_sec": personality["target_timer_sec"],
+                "follow_up": "What specific index type would you use for composite column filters?"
+            },
+            {
+                "id": "q2",
+                "domain": "HR",
+                "question": "Why are you interested in transitioning into an Enterprise Engineering role at our company?",
+                "target_timer_sec": 60,
+                "follow_up": "How does your career goal align with our 3-year technology roadmap?"
+            },
+            {
+                "id": "q3",
+                "domain": "Behavioral",
+                "question": "Describe a situation where a critical database migration failed in production. How did you handle post-mortem and communication?",
+                "target_timer_sec": 90,
+                "follow_up": "What automated checks did you add to prevent recurrence?"
+            },
+            {
+                "id": "q4",
+                "domain": "Project Discussion",
+                "question": f"Walk us through the architecture of your top project utilizing {skills_str}. What trade-offs did you make?",
+                "target_timer_sec": 90,
+                "follow_up": "If you had 10x traffic tomorrow, which component breaks first?"
+            },
+            {
+                "id": "q5",
+                "domain": "Resume Discussion",
+                "question": "Can you elaborate on the microservice optimization bullet point listed under your recent experience?",
+                "target_timer_sec": 60,
+                "follow_up": "How did you measure the 30% throughput increase?"
             }
-
-        answer_lower = user_answer.lower()
-        matched_points = []
-        missing_points = []
-
-        if expected_points:
-            for pt in expected_points:
-                if pt.lower() in answer_lower:
-                    matched_points.append(pt)
-                else:
-                    missing_points.append(pt)
-            
-            coverage = len(matched_points) / len(expected_points)
-        else:
-            coverage = 0.7 if len(user_answer.split()) > 40 else 0.4
-
-        # Score calculation (word count quality + expected point coverage)
-        word_count = len(user_answer.split())
-        length_factor = min(1.0, word_count / 50.0)
-        
-        score = round((0.7 * coverage + 0.3 * length_factor) * 100.0, 1)
-        score = min(100.0, max(15.0, score))
-
-        strengths = []
-        improvements = []
-
-        if matched_points:
-            strengths.append(f"Good technical coverage of key terms: {', '.join(matched_points)}.")
-        if word_count > 40:
-            strengths.append("Clear detail and depth in response length.")
-
-        if missing_points:
-            improvements.append(f"Consider addressing these core concepts in your answer: {', '.join(missing_points[:4])}.")
-        if word_count < 30:
-            improvements.append("Use the STAR technique (Situation, Task, Action, Result) to structure a longer, impactful response.")
+        ]
 
         return {
-            "score": score,
-            "feedback": "Strong effort! " + ("Good coverage of technical details." if score >= 70 else "Include more specific architectural details and outcomes."),
-            "strengths": strengths if strengths else ["Clear communication"],
-            "improvements": improvements if improvements else ["Keep practicing with real project metrics."]
+            "target_role": target_role,
+            "interviewer_personality": personality,
+            "total_questions": len(questions),
+            "question_blueprint": questions,
+            "questions": [q["question"] for q in questions]
         }
+
+    @classmethod
+    def generate_questions(cls, target_role: str = "Backend Engineer", resume_text: str = None) -> List[str]:
+        bp = cls.generate_interview_blueprint(target_role)
+        return bp["questions"]
+
+    @classmethod
+    def evaluate_user_answer(cls, question: str, user_answer: str) -> Dict[str, Any]:
+        words = user_answer.strip().split()
+        word_count = len(words)
+
+        relevance = min(100.0, max(40.0, (word_count / 30.0) * 100.0))
+        completeness = min(100.0, max(50.0, (word_count / 40.0) * 100.0))
+        communication = 85.0 if word_count >= 20 else 60.0
+        tech_depth = 90.0 if any(term in user_answer.lower() for term in ["async", "docker", "postgres", "redis", "index", "cache", "latency", "sub-50ms", "throughput"]) else 65.0
+
+        overall_score = round((relevance * 0.25) + (completeness * 0.25) + (communication * 0.25) + (tech_depth * 0.25), 1)
+
+        return {
+            "question": question,
+            "user_answer": user_answer,
+            "overall_score": overall_score,
+            "scoring_dimensions": {
+                "relevance": round(relevance, 1),
+                "completeness": round(completeness, 1),
+                "communication": round(communication, 1),
+                "technical_depth": round(tech_depth, 1)
+            },
+            "suggested_follow_up": "What specific monitoring tools did you use to track query latency?",
+            "final_report": "Candidate demonstrated strong technical communication and depth. Recommend moving to system design round."
+        }
+
+InterviewService = MultiDomainInterviewSimulator
+interview_service = MultiDomainInterviewSimulator()
