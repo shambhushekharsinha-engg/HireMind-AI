@@ -28,6 +28,8 @@ class ResumeParser:
     @staticmethod
     def extract_text_from_pdf(file_path: str) -> str:
         text = ""
+
+        # Fallback 1: pdfplumber
         if HAS_PDFPLUMBER:
             try:
                 with pdfplumber.open(file_path) as pdf:
@@ -40,7 +42,7 @@ class ResumeParser:
             except Exception:
                 pass
 
-        # Fallback to PyPDF
+        # Fallback 2: PyPDF
         if HAS_PYPDF:
             try:
                 reader = PdfReader(file_path)
@@ -48,8 +50,25 @@ class ResumeParser:
                     extracted = page.extract_text()
                     if extracted:
                         text += extracted + "\n"
+                if text.strip():
+                    return text.strip()
             except Exception as e:
-                print(f"Error reading PDF: {e}")
+                print(f"Error reading PDF with PyPDF: {e}")
+
+        # Fallback 3: Raw byte string stream extraction if PDF readers fail
+        try:
+            with open(file_path, "rb") as f:
+                content = f.read()
+                matches = re.findall(rb"[\x20-\x7E\s]{4,}", content)
+                extracted_strings = [
+                    m.decode("latin1", errors="ignore").strip()
+                    for m in matches
+                    if len(m.strip()) > 3 and not m.startswith(b"/") and not m.startswith(b"%")
+                ]
+                if extracted_strings:
+                    text = "\n".join(extracted_strings[:120])
+        except Exception as e:
+            print(f"Error in raw byte extraction fallback: {e}")
 
         return text.strip()
 

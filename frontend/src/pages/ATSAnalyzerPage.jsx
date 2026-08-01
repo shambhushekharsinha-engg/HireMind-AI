@@ -49,12 +49,7 @@ export default function ATSAnalyzerPage({ onAnalysisComplete, analysisData, setA
       if (onAnalysisComplete) onAnalysisComplete(data);
     } catch (err) {
       console.error(err);
-      const rawMsg = err.message || '';
-      if (rawMsg.includes('Internal Server Error') || rawMsg.includes('psycopg2') || rawMsg.includes('SQL') || rawMsg.includes('UndefinedColumn')) {
-        setError('Server database sync in progress. Please re-try in a few seconds.');
-      } else {
-        setError(rawMsg || 'Error communicating with backend server.');
-      }
+      setError(err.message || 'Error communicating with backend server.');
     } finally {
       setLoading(false);
     }
