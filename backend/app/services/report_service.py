@@ -1,10 +1,22 @@
 import os
+import xml.sax.saxutils as saxutils
 from typing import Dict, Any
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from app.core.config import settings
+
+def sanitize_pdf_text(text: str) -> str:
+    """Escapes XML tags and ensures safe string representation for ReportLab."""
+    if not text:
+        return ""
+    # Safe escape for ReportLab XML parser
+    clean = saxutils.escape(str(text))
+    # Replace non-printable control characters
+    return "".join(c if ord(c) >= 32 or c in "\n\r\t" else "" for c in clean)
 
 class ReportService:
 
@@ -61,16 +73,20 @@ class ReportService:
 
         story = []
 
+        # Safe Sanitized Input Text
+        safe_filename = sanitize_pdf_text(analysis_data.get('filename', 'Resume.pdf'))
+        safe_rating = sanitize_pdf_text(analysis_data.get('rating', 'Good'))
+
         # Header Title
         story.append(Paragraph("<b>HireMind AI</b> — Executive Resume Intelligence Report", title_style))
-        story.append(Paragraph(f"<b>Filename:</b> {analysis_data.get('filename', 'Resume.pdf')} | <b>Rating:</b> {analysis_data.get('rating', 'Good')}", body_style))
+        story.append(Paragraph(f"<b>Filename:</b> {safe_filename} | <b>Rating:</b> {safe_rating}", body_style))
         story.append(HRFlowable(width="100%", thickness=2, color=PRIMARY, spaceAfter=15))
 
         # Score Overview Table
         score = analysis_data.get("ats_score", 0.0)
         score_data = [
             [Paragraph("<b>ATS Compatibility Score</b>", body_style), Paragraph(f"<b>{score} / 100</b>", body_style)],
-            [Paragraph("<b>Performance Benchmark</b>", body_style), Paragraph(f"<b>{analysis_data.get('rating', 'Good')}</b>", body_style)]
+            [Paragraph("<b>Performance Benchmark</b>", body_style), Paragraph(f"<b>{safe_rating}</b>", body_style)]
         ]
 
         t = Table(score_data, colWidths=[250, 250])
@@ -85,20 +101,21 @@ class ReportService:
 
         # Skills Found
         story.append(Paragraph("Detected Core Skills", heading_style))
-        skills_str = ", ".join(analysis_data.get("skills_found", [])) or "None detected"
+        skills = [sanitize_pdf_text(s) for s in analysis_data.get("skills_found", [])]
+        skills_str = ", ".join(skills) or "None detected"
         story.append(Paragraph(f"<b>Skills:</b> {skills_str}", body_style))
         story.append(Spacer(1, 10))
 
         # Strengths
         story.append(Paragraph("Key Strengths", heading_style))
         for st in analysis_data.get("strengths", []):
-            story.append(Paragraph(f"• {st}", body_style))
+            story.append(Paragraph(f"• {sanitize_pdf_text(st)}", body_style))
         story.append(Spacer(1, 10))
 
         # Suggestions
         story.append(Paragraph("Actionable Improvement Recommendations", heading_style))
         for sg in analysis_data.get("suggestions", []):
-            story.append(Paragraph(f"• {sg}", body_style))
+            story.append(Paragraph(f"• {sanitize_pdf_text(sg)}", body_style))
         story.append(Spacer(1, 15))
 
         # Footer
@@ -107,3 +124,4 @@ class ReportService:
 
         doc.build(story)
         return output_path
+

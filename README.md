@@ -6,7 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4.0-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Positioning Statement**: HireMind AI is not just a standard resume analyzer. It is an **AI-Powered Career Operating System** that helps students, software engineers, and professionals optimize resumes, match jobs with vector space similarity, prepare for interviews, plan learning roadmaps, generate portfolio websites, and manage their entire career journey through intelligent automation.
+> **Positioning Statement**: HireMind AI is an **Enterprise AI-Powered Career Operating System** that empowers students, software engineers, and professionals to optimize resumes, match jobs using hybrid vector embeddings, practice interviews, track learning roadmaps, generate portfolio websites, and manage their entire career journey through production-grade intelligent automation.
 
 ---
 
@@ -14,7 +14,9 @@
 
 - **⚡ Production Web Application (Vercel)**: [https://hiremind-ai-resume.vercel.app](https://hiremind-ai-resume.vercel.app)
 - **⚙️ Backend REST API Documentation (Render)**: [https://hiremind-ai-au7b.onrender.com/docs](https://hiremind-ai-au7b.onrender.com/docs)
-- **📊 System Health Check**: [https://hiremind-ai-au7b.onrender.com/health](https://hiremind-ai-au7b.onrender.com/health)
+- **📊 System Health Check Overview**: [https://hiremind-ai-au7b.onrender.com/health](https://hiremind-ai-au7b.onrender.com/health)
+- **🗄️ Database Health**: [https://hiremind-ai-au7b.onrender.com/health/db](https://hiremind-ai-au7b.onrender.com/health/db)
+- **🧠 AI Engine Health**: [https://hiremind-ai-au7b.onrender.com/health/ai](https://hiremind-ai-au7b.onrender.com/health/ai)
 - **📈 Prometheus Metrics Telemetry**: [https://hiremind-ai-au7b.onrender.com/metrics](https://hiremind-ai-au7b.onrender.com/metrics)
 
 ---
@@ -31,25 +33,26 @@ Try out HireMind AI instantly with pre-configured demo credentials:
 
 ---
 
-## 🏛️ Scalable Architecture Specification
+## 🏛️ Enterprise Architecture Specification
 
 ```
                           ┌───────────────────────────┐
                           │    API Gateway & Router   │
+                          │   (Request IDs & CORS)    │
                           └─────────────┬─────────────┘
                                         │
     ┌────────────────┬──────────────────┼──────────────────┬────────────────┐
     │                │                  │                  │                │
 ┌───▼───┐        ┌───▼───┐          ┌───▼───┐          ┌───▼───┐        ┌───▼───┐
 │ Auth  │        │Resume │          │  AI   │          │Report │        │  Job  │
-│Service│        │Service│          │Service│          │Service│        │Tracker│
+│Service│        │Service│          │Engine │          │Service│        │Tracker│
 └───┬───┘        └───┬───┘          └───┬───┘          └───┬───┘        └───┬───┘
     │                │                  │                  │                │
     └────────────────┴──────────────────┼──────────────────┴────────────────┘
                                         │
                         ┌───────────────▼───────────────┐
                         │ Data Layer & Message Queues   │
-                        │ (PostgreSQL / Redis / FAISS)  │
+                        │ (PostgreSQL / SQLite / Redis) │
                         └───────────────────────────────┘
 ```
 
@@ -64,64 +67,59 @@ Try out HireMind AI instantly with pre-configured demo credentials:
 - **LinkedIn Profile Optimizer (`/api/v2/ai/linkedin-optimize`)**: Calculates headline SEO scores, detected keyword tags, and recruiter searchability ratings.
 
 ### 🧠 Pillar 2 — Advanced AI, Vector Embeddings & Memory
-- **Vector Embeddings & FAISS**: TF-IDF Vector Space Model & Sentence Transformer cosine similarity for semantic job description matching.
-- **Multi-Model Provider Support**: Pluggable backend architecture supporting OpenAI, Gemini, Hugging Face, and Ollama (offline local LLM).
-- **AI Career Mentor ("I Want Microsoft SDE")**: Creates tailored roadmaps, timelines, projects, certifications, and interview preparation plans.
-- **AI Explainability Score Breakdown (`/api/v2/ai/explain-ats`)**: Explains raw ATS scores down to weighted factor contributions (`Formatting 18/20`, `Skills 15/20`, `Experience 19/20`, `Projects 12/15`, `Education 9/10`, `Keywords 9/15`) and predicts interview callback probability %.
+- **40% / 60% Hybrid Job Matching Engine**: Combines sparse TF-IDF keyword vector space similarity (40%) with SentenceTransformer dense embeddings (60% using `all-MiniLM-L6-v2`) for semantic job matching.
+- **spaCy NER Candidate Name Extraction**: Named Entity Recognition (`PERSON` entity tagger) with top-line heuristic fallbacks for accurate candidate name identification.
+- **500+ Skill Alias Normalization Map**: Normalizes skill variations to canonical forms (`Py Torch`/`torch` $\rightarrow$ `PyTorch`, `JS` $\rightarrow$ `JavaScript`, `NodeJS` $\rightarrow$ `Node.js`, `Postgres` $\rightarrow$ `PostgreSQL`).
+- **AI Explainability ATS Score Breakdown (`/api/v2/ai/explain-ats`)**: Explains raw ATS scores down to 4 sub-score categories (`Formatting Hygiene`, `Projects & Impact`, `Experience & Action Verbs`, `Skills Match`) and predicts callback probability %.
 
-### ⚙️ Pillar 3 — Backend Engineering
-- **API Versioning Namespace (`/api/v1` & `/api/v2`)**: Decoupled routers for enterprise features running alongside v1 routes.
-- **Modular Microservices Boundary**: Split into Auth, Resumes, Jobs, AI, Reports, Notifications, and Analytics modules.
-- **Redis & Caching**: Cache layers for OTP validation, user sessions, and API rate limiting.
+### ⚙️ Pillar 3 — Backend Engineering & Security
+- **Dual JWT Token Architecture**: 15-minute `access_token` and 7-day `refresh_token` split with dedicated `/api/v1/auth/refresh` endpoint.
+- **SHA-256 Single-Use Password Reset Tokens**: 32-byte URL-safe raw tokens (`secrets.token_urlsafe(32)`), stored as SHA-256 hashes in DB with 15-minute expiration and automatic invalidation.
+- **Soft Delete Schema (`deleted_at TIMESTAMP NULL`)**: Standardized soft deletion across all 13 database models (`deleted_at IS NULL` indicates active records).
+- **Clean Resume Versioning Entity Model**: `User` $\rightarrow$ `Resume` $\rightarrow$ `ResumeRevision` $\rightarrow$ `ResumeAnalysis` tracking file versions, version numbers, SHA-256 content hashes, and parsed sections.
+- **SHA-256 Resume Content Hash Caching**: Hashes uploaded file content to return cached analysis results instantly for duplicate uploads without re-running heavy NLP parsers.
 
-### 🛡️ Pillar 4 — DevOps & Observability
-- **Docker & Orchestration**: Containerization with production `Dockerfile.backend`, `Dockerfile.frontend`, and `docker-compose.yml`.
-- **GitHub Actions CI/CD**: Automated integration testing workflow in `.github/workflows/ci-cd.yml`.
-- **Observability**: Uptime health checks (`/health`), Prometheus metrics (`/metrics`), and performance execution timing headers (`X-Process-Time-Sec`).
+### 🛡️ Pillar 4 — DevOps, Security & Observability
+- **Centralized Pydantic Settings Config ([config.py](file:///c:/HireMind-AI/backend/app/core/config.py))**: Manages JWT expiries, file size limits (10MB), allowed MIME types, upload paths, and secret keys.
+- **Request IDs & Correlation Header (`X-Request-ID`)**: Middleware assigning unique `req-...` UUIDs to every HTTP request.
+- **Structured JSON Logging**: Standardized JSON log output capturing `timestamp`, `request_id`, `method`, `path`, `status_code`, and `process_time_sec`.
+- **Granular Health Check Endpoints**: `/health` (system), `/health/db` (`SELECT 1`), `/health/ai` (spaCy status), `/health/storage` (write access).
+- **Standardized Error Envelopes**: Global exception handlers returning clean `{ "success": false, "error": { "code": "...", "message": "...", "request_id": "..." } }` JSON responses.
 
-### 🔒 Pillar 5 — Security & Compliance
-- **Authentication**: Direct `bcrypt` password hashing, JWT bearer tokens, and OAuth2 form handlers.
-- **Access Control**: Role-Based Access Control (RBAC) supporting `Student`, `Recruiter`, and `Admin` roles.
-- **Input Validation**: Strict Pydantic v2 validation and file upload extension filtering (`PDF`, `DOCX`, `TXT`).
-
----
-
-## 🚀 Unique Features Integrated
-
-1. **Git-Style Resume Version Control Diff (`/api/v2/resume/compare-versions`)**: Side-by-side version comparator calculating added/removed skills and ATS score deltas.
-2. **Application Tracker Board**: Kanban lifecycle management (`Applied`, `Interviewing`, `Offer`, `Rejected`).
-3. **Target Company Blueprint (`/api/v2/ai/company-blueprint`)**: Pre-application hiring insights detailing interview difficulty, expected tech stack skills, salary estimates, and hiring trends.
-4. **GitHub Repository Analyzer (`/api/v2/integrations/github-analyze`)**: Evaluates repository URLs for code quality, README documentation score, and commit consistency.
-5. **Recruiter AI Portal (`/api/v1/recruiter/candidates`)**: Candidate ranking, minimum ATS threshold filter, and candidate summary badges.
+### 🔒 Pillar 5 — Upload Security & Compliance
+- **Upload Security**: MIME type validation, 10MB file size limits, UUID4 randomized filenames (eliminating path traversal risks), and malformed PDF guards.
+- **Multi-language ReportLab UTF-8 PDF Reports**: String XML escaping & UTF-8 character sanitization for multi-language resume PDF reports.
 
 ---
 
-## 🗄️ Relational Database Schema (12 SQLAlchemy ORM Models)
+## 🗄️ Relational Database Schema (13 SQLAlchemy ORM Models)
 
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────────────┐
-│    Users     │────<│   Resumes    │────<│   ResumeAnalyses     │
-└──────────────┘     └──────────────┘     └──────────────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────────────┐     ┌──────────────────────┐
+│    Users     │────<│   Resumes    │────<│   ResumeRevisions    │────<│   ResumeAnalyses     │
+└──────────────┘     └──────────────┘     └──────────────────────┘     └──────────────────────┘
        │                    │                        │
        │                    │                        │
        ▼                    ▼                        ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────────────┐
-│ Applications │     │BuilderDrafts │     │   InterviewSessions  │
-└──────────────┘     └──────────────┘     └──────────────────────┘
+┌──────────────────┐ ┌──────────────┐     ┌──────────────────────┐
+│PasswordResetToken│ │BuilderDrafts │     │   InterviewSessions  │
+└──────────────────┘ └──────────────┘     └──────────────────────┘
 ```
 
-1. **`users`**: Email/Mobile authentication, direct bcrypt hashes, and RBAC roles.
-2. **`resumes`**: File storage paths, extracted raw text, and version numbers.
-3. **`resume_analyses`**: ATS scores, rating badges, section breakdowns, and detected skills.
-4. **`resume_builder_drafts`**: Saved JSON drafts and template selections.
-5. **`job_descriptions`**: Target role titles, raw text, and extracted skill arrays.
-6. **`job_matches`**: Match scores, TF-IDF cosine similarity values, and missing skill lists.
-7. **`job_applications`**: Application tracker board stages.
-8. **`coach_messages`**: Conversational Q&A chat history with the AI Career Mentor.
-9. **`career_roadmaps`**: Step-by-step learning roadmaps and estimated salary ranges.
-10. **`interview_sessions`**: Practice interview questions, candidate answers, and evaluation scores.
-11. **`notifications`**: System alerts and status updates.
-12. **`feedbacks`**: User feedback ratings and comments.
+1. **`users`**: Email/Mobile authentication, direct bcrypt hashes, RBAC roles, `created_at`, `updated_at`, `deleted_at`.
+2. **`password_reset_tokens`**: SHA-256 hashed reset tokens (`token_hash`), `expires_at`, `is_used` single-use flag.
+3. **`resumes`**: Resume container records bound to users.
+4. **`resume_revisions`**: Individual file uploads, version numbers, content hashes, raw text, and parsed sections.
+5. **`resume_analyses`**: ATS scores, rating badges, 4-part subscore dashboards, and detected skills.
+6. **`resume_builder_drafts`**: Saved JSON drafts and template selections.
+7. **`job_descriptions`**: Target role titles, raw text, and extracted skill arrays.
+8. **`job_matches`**: Match scores, 40/60 hybrid vector similarity values, and missing skill lists.
+9. **`job_applications`**: Application tracker board stages.
+10. **`coach_messages`**: Conversational Q&A chat history with the AI Career Mentor.
+11. **`career_roadmaps`**: Step-by-step learning roadmaps, completed steps, streaks, and estimated salary ranges.
+12. **`interview_sessions`**: Practice interview questions, candidate answers, and evaluation scores.
+13. **`notifications`**: System alerts and status updates.
+14. **`feedbacks`**: User feedback ratings and comments.
 
 ---
 
@@ -131,37 +129,30 @@ Try out HireMind AI instantly with pre-configured demo credentials:
 | Method | Path | Description |
 | :--- | :--- | :--- |
 | `POST` | `/api/v1/auth/register` | Register user with email or mobile number. |
-| `POST` | `/api/v1/auth/login` | Authenticate user and return JWT bearer token. |
+| `POST` | `/api/v1/auth/login` | Authenticate user and return Access (15m) + Refresh (7d) token pair. |
+| `POST` | `/api/v1/auth/refresh` | Exchange valid refresh token for a new access token pair. |
+| `POST` | `/api/v1/auth/forgot-password` | Generate single-use SHA-256 hashed password reset token. |
+| `POST` | `/api/v1/auth/reset-password` | Update password using valid reset token and invalidate single-use token. |
 | `POST` | `/api/v1/auth/demo-login` | Instant 1-click login for Demo Student, Recruiter, or Admin. |
-| `POST` | `/api/v1/resumes/upload` | Upload resume file (PDF/DOCX) and run multi-factor ATS evaluation. |
+| `POST` | `/api/v1/resumes/upload` | Secure resume upload (PDF/DOCX) with SHA-256 caching & ATS scoring. |
 | `GET` | `/api/v1/resumes/history` | Retrieve historical resume evaluation records. |
-| `POST` | `/api/v1/builder/download-pdf` | Render and download formatted PDF resume. |
-| `POST` | `/api/v1/jobs/match` | Compute TF-IDF vector similarity between resume and job description. |
+| `POST` | `/api/v1/jobs/match` | 40/60 Hybrid TF-IDF + Sentence Transformer semantic job matching. |
 | `GET` | `/api/v1/applications` | List active job application tracker records. |
-| `POST` | `/api/v1/applications` | Create a new job application tracker entry. |
 | `POST` | `/api/v1/coach/ask` | Send question to AI Career Mentor. |
 | `POST` | `/api/v1/career/roadmap` | Generate 4-phase step-by-step career growth roadmap. |
 | `POST` | `/api/v1/interview/questions` | Fetch domain-specific interview practice questions. |
 | `POST` | `/api/v1/interview/evaluate` | Evaluate candidate interview response against key rubrics. |
 | `POST` | `/api/v1/rewriter/rewrite` | Transform bullet points into Google XYZ formula items. |
 | `GET` | `/api/v1/recruiter/candidates` | Search, filter, and rank candidate resumes for recruiters. |
-| `GET` | `/api/v1/analytics/user` | Fetch user activity metrics and platform status. |
 
-### API v2 Namespace (`/api/v2`)
+### System & Health Endpoints
 | Method | Path | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/v2/resume/live-ats-score` | Real-time ATS score recalculation while editing. |
-| `POST` | `/api/v2/resume/compare-versions` | Git-style side-by-side version diffing & ATS score delta. |
-| `POST` | `/api/v2/resume/portfolio-html` | Compiles resume data into a standalone HTML portfolio website. |
-| `POST` | `/api/v2/ai/cover-letter` | Personalized cover letter generator. |
-| `POST` | `/api/v2/ai/linkedin-optimize` | LinkedIn headline SEO and summary searchability optimizer. |
-| `POST` | `/api/v2/ai/company-blueprint` | Target company hiring blueprint ("Microsoft SDE", "Google SWE"). |
-| `POST` | `/api/v2/ai/explain-ats` | Explainable ATS factor breakdown and interview call probability %. |
-| `POST` | `/api/v2/ai/benchmark` | AI resume benchmarking against top 10% applicant cohort. |
-| `POST` | `/api/v2/ai/career-gap` | Career gap analysis and 5-week personalized learning roadmap. |
-| `POST` | `/api/v2/ai/recommend-projects` | Portfolio project recommender for target role. |
-| `POST` | `/api/v2/ai/recruiter-summary` | Recruiter AI candidate summary & interview focus areas. |
-| `POST` | `/api/v2/integrations/github-analyze` | Open-source GitHub repository quality analyzer. |
+| `GET` | `/health` | System health overview. |
+| `GET` | `/health/db` | Database connection health check (`SELECT 1`). |
+| `GET` | `/health/ai` | AI engine & spaCy model loading status. |
+| `GET` | `/health/storage` | File storage write permission check. |
+| `GET` | `/metrics` | Prometheus format metrics telemetry endpoint. |
 
 ---
 
@@ -181,13 +172,7 @@ Try out HireMind AI instantly with pre-configured demo credentials:
 ### Engineering Bio
 **Shambhu Shekhar Sinha** is a Full-Stack AI Engineer and Distributed Systems Architect specializing in production-grade AI platforms, real-time telemetry systems, high-throughput REST microservices, and modern web application architecture. 
 
-With deep domain expertise in **FastAPI**, **React 19**, **Natural Language Processing (NLP)**, **TF-IDF Vector Space Models**, **SQLAlchemy ORM**, **Docker**, and **DevOps Infrastructure**, Shambhu architected **HireMind AI v3.0** and **Aegis Traffic AI** to demonstrate production-level reliability, sub-100ms response times, and state-of-the-art 3D glassmorphic user experiences.
-
-### Core Technical Competencies
-- **Artificial Intelligence & NLP**: Natural Language Processing, TF-IDF Cosine Similarity, PyTorch, Scikit-Learn, spaCy, Vector Embeddings, RAG Architectures.
-- **Backend Engineering**: FastAPI, Python 3.13+, SQLAlchemy 2.0, Pydantic v2, Direct Bcrypt Security, JWT Authentication, PostgreSQL, SQLite.
-- **Frontend Development**: React 19, Vite, Tailwind CSS v4.0, Glassmorphic 3D UI, Lucide Icons, Responsive Mobile-First Design.
-- **DevOps & Cloud Infrastructure**: Docker, Docker Compose, Nginx Reverse Proxy, GitHub Actions CI/CD, Render, Vercel, Prometheus Telemetry.
+With deep domain expertise in **FastAPI**, **React 19**, **Natural Language Processing (NLP)**, **Sentence Transformers**, **SQLAlchemy ORM**, **Docker**, and **DevOps Infrastructure**, Shambhu architected **HireMind AI v3.0** and **Aegis Traffic AI** to demonstrate production-level reliability, sub-100ms response times, and state-of-the-art 3D glassmorphic user experiences.
 
 ---
 
