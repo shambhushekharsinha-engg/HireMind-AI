@@ -339,7 +339,7 @@ app.include_router(integrations_v2.router, prefix=API_V2)
 
 
 # --- Operational Health Dashboard ---
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_overview():
     return {
         "status": "healthy",
@@ -351,7 +351,7 @@ def health_overview():
     }
 
 
-@app.get("/health/dashboard")
+@app.api_route("/health/dashboard", methods=["GET", "HEAD"])
 def operational_health_dashboard():
     """
     Comprehensive Operational Health Dashboard inspecting:
@@ -404,7 +404,7 @@ def prometheus_metrics():
     return Response(content=metrics_data, media_type="text/plain")
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {
         "status": "online",
