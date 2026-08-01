@@ -1,10 +1,12 @@
 import os
 from typing import Dict
 
+
 class FeatureFlags:
     """
     Expanded Feature Flag Manager for toggleable platform deployments.
     """
+
     def __init__(self):
         self._flags: Dict[str, bool] = {
             "ENABLE_EXPERIMENTAL_AI": os.getenv("FLAG_EXPERIMENTAL_AI", "true").lower() == "true",
@@ -16,7 +18,7 @@ class FeatureFlags:
             "ENABLE_PORTFOLIO": os.getenv("FLAG_PORTFOLIO", "true").lower() == "true",
             "ENABLE_BACKGROUND_JOBS": os.getenv("FLAG_BACKGROUND_JOBS", "true").lower() == "true",
             "ENABLE_AUDIT_LOGGING": os.getenv("FLAG_AUDIT_LOGGING", "true").lower() == "true",
-            "ENABLE_RATE_LIMITING": os.getenv("FLAG_RATE_LIMITING", "true").lower() == "true"
+            "ENABLE_RATE_LIMITING": os.getenv("FLAG_RATE_LIMITING", "true").lower() == "true",
         }
 
     def is_enabled(self, flag_name: str) -> bool:
@@ -27,5 +29,6 @@ class FeatureFlags:
 
     def get_all(self) -> Dict[str, bool]:
         return self._flags.copy()
+
 
 feature_flags = FeatureFlags()

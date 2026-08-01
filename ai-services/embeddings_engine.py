@@ -1,7 +1,8 @@
-import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 class EmbeddingsEngine:
     def __init__(self):
@@ -29,9 +30,10 @@ class EmbeddingsEngine:
             ranked = []
             for idx, score in enumerate(similarities):
                 ranked.append({"doc_index": idx, "similarity_score": float(score)})
-            
+
             return sorted(ranked, key=lambda x: x["similarity_score"], reverse=True)
         except Exception:
             return [{"doc_index": i, "similarity_score": 0.5} for i in range(len(documents))]
+
 
 embeddings_service = EmbeddingsEngine()

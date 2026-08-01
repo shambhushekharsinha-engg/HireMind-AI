@@ -1,14 +1,14 @@
-import os
-import sys
 import logging
-from sqlalchemy.sql import text
+import os
 
 from app.core.config import settings
 from app.database.session import engine
-from app.services.vector_store import faiss_vector_store
 from app.services.nlp_engine import nlp
+from app.services.vector_store import faiss_vector_store
+from sqlalchemy.sql import text
 
 logger = logging.getLogger("hiremind.startup")
+
 
 class StartupValidator:
     """
@@ -20,6 +20,7 @@ class StartupValidator:
     4. spaCy & Embedding Models Readiness
     5. FAISS Vector Store Availability
     """
+
     @classmethod
     def validate_all(cls) -> bool:
         logger.info("--- Initiating HireMind AI Startup Validation ---")
@@ -56,6 +57,7 @@ class StartupValidator:
 
         logger.info("--- Startup Validation Passed Successfully (100% Operational) ---")
         return True
+
 
 def run_startup_checks():
     if not StartupValidator.validate_all():

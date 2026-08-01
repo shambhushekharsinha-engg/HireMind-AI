@@ -1,6 +1,7 @@
-import pytest
 import time
-from app.core.tracing import RequestTracer, get_tracer
+
+from app.core.tracing import get_tracer
+
 
 def test_request_tracer_spans():
     tracer = get_tracer("test-trace-123")

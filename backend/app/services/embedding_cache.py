@@ -1,10 +1,12 @@
 import hashlib
 from typing import Dict, List, Optional
 
+
 class EmbeddingCache:
     """
     In-Memory & Hash-indexed Embedding Cache to eliminate redundant vector computations.
     """
+
     def __init__(self):
         self._cache: Dict[str, List[float]] = {}
 
@@ -21,5 +23,6 @@ class EmbeddingCache:
 
     def size(self) -> int:
         return len(self._cache)
+
 
 embedding_cache = EmbeddingCache()

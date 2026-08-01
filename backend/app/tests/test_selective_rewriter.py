@@ -1,10 +1,10 @@
-import pytest
 from app.services.resume_rewriter import resume_rewriter
+
 
 def test_selective_bullet_rewriting():
     bullets = [
         "Worked on backend python code and fixed bugs.",
-        "Architected scalable microservices using FastAPI and Docker, processing 500,000 requests/day."
+        "Architected scalable microservices using FastAPI and Docker, processing 500,000 requests/day.",
     ]
     res = resume_rewriter.rewrite_bullets(bullets)
     assert res["total_bullets_analyzed"] == 2

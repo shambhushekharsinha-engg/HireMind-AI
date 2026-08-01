@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.all_models import Resume
 from app.schemas.all_schemas import CareerRoadmapRequest, CareerRoadmapResult
 from app.services.career_service import CareerService
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/career", tags=["Career Intelligence"])
+
 
 @router.post("/roadmap", response_model=CareerRoadmapResult)
 def generate_career_roadmap(request: CareerRoadmapRequest, db: Session = Depends(get_db)):

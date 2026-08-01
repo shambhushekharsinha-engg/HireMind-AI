@@ -1,29 +1,25 @@
+import json
+import logging
 import os
 import time
 import uuid
-import logging
-import json
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, Response
-from sqlalchemy.sql import text
 
+import app.models.all_models
 from app.core.config import settings
 from app.core.feature_flags import feature_flags
-from app.core.rate_limiter import rate_limiter
-from app.core.error_codes import ErrorCode
 from app.core.startup_check import run_startup_checks
-from app.core.event_dispatcher import event_dispatcher
-from app.services.audit_service import audit_service
-from app.services.vector_store import faiss_vector_store
-from app.services.embedding_cache import embedding_cache
-from app.services.task_queue import task_queue_manager
-from app.database.session import engine
 from app.database.base import Base
-import app.models.all_models
+from app.database.session import engine
+from app.services.embedding_cache import embedding_cache
 from app.services.nlp_engine import nlp
+from app.services.task_queue import task_queue_manager
+from app.services.vector_store import faiss_vector_store
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.sql import text
 
 # Configure Structured JSON Logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -40,8 +36,9 @@ app = FastAPI(
     description="Enterprise Career Operating System — Live ATS Scoring, Portfolio Generator, Vector RAG Coach, Repositories & Security Middleware.",
     version="3.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
+
 
 # 1. Security Headers Middleware
 @app.middleware("http")
@@ -52,6 +49,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:;"
     return response
+
 
 # 2. Request ID & Observability Middleware
 @app.middleware("http")
@@ -73,11 +71,12 @@ async def add_request_id_and_observability(request: Request, call_next):
         "method": request.method,
         "path": request.url.path,
         "status_code": response.status_code,
-        "process_time_sec": round(process_time, 4)
+        "process_time_sec": round(process_time, 4),
     }
     logger.info(json.dumps(log_entry))
 
     return response
+
 
 # Standardized Error Code Handlers
 @app.exception_handler(HTTPException)
@@ -88,13 +87,10 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         status_code=exc.status_code,
         content={
             "success": False,
-            "error": {
-                "code": code,
-                "message": exc.detail,
-                "request_id": request_id
-            }
-        }
+            "error": {"code": code, "message": exc.detail, "request_id": request_id},
+        },
     )
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -107,10 +103,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 "code": "HM422",
                 "message": "Invalid request payload structure or parameter types.",
                 "details": exc.errors(),
-                "request_id": request_id
-            }
-        }
+                "request_id": request_id,
+            },
+        },
     )
+
 
 # Restricted CORS Middleware
 cors_origins = ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS
@@ -120,7 +117,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Request-ID", "X-Process-Time-Sec"]
+    expose_headers=["X-Request-ID", "X-Process-Time-Sec"],
 )
 
 # Serve static reports
@@ -128,10 +125,21 @@ app.mount("/generated_reports", StaticFiles(directory=settings.REPORTS_DIR), nam
 
 # Import API Routers
 from app.api.v1 import (
-    auth, resumes, builder, jobs, applications, coach, 
-    career, interview, rewriter, reports, recruiter, analytics, feedback
+    analytics,
+    applications,
+    auth,
+    builder,
+    career,
+    coach,
+    feedback,
+    interview,
+    jobs,
+    recruiter,
+    reports,
+    resumes,
+    rewriter,
 )
-from app.api.v2 import resume_v2, ai_v2, integrations_v2
+from app.api.v2 import ai_v2, integrations_v2, resume_v2
 
 # Mount V1 Routes
 API_V1 = settings.API_V1_STR
@@ -155,6 +163,7 @@ app.include_router(resume_v2.router, prefix=API_V2)
 app.include_router(ai_v2.router, prefix=API_V2)
 app.include_router(integrations_v2.router, prefix=API_V2)
 
+
 # --- Operational Health Dashboard ---
 @app.get("/health")
 def health_overview():
@@ -164,8 +173,9 @@ def health_overview():
         "environment": settings.ENVIRONMENT,
         "version": "3.0.0",
         "feature_flags": feature_flags.get_all(),
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
+
 
 @app.get("/health/dashboard")
 def operational_health_dashboard():
@@ -190,12 +200,19 @@ def operational_health_dashboard():
             "storage": {"upload_dir": upload_ok, "reports_dir": reports_ok},
             "spacy_nlp": {"loaded": nlp is not None, "model": "en_core_web_sm"},
             "embedding_cache": {"size": embedding_cache.size(), "status": "online"},
-            "faiss_vector_store": {"documents_count": len(faiss_vector_store.documents), "status": "online"},
-            "async_task_queue": {"active_tasks_count": len(task_queue_manager.tasks), "status": "online"}
+            "faiss_vector_store": {
+                "documents_count": len(faiss_vector_store.documents),
+                "status": "online",
+            },
+            "async_task_queue": {
+                "active_tasks_count": len(task_queue_manager.tasks),
+                "status": "online",
+            },
         },
         "feature_flags": feature_flags.get_all(),
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
+
 
 @app.get("/metrics")
 def prometheus_metrics():
@@ -212,6 +229,7 @@ def prometheus_metrics():
     )
     return Response(content=metrics_data, media_type="text/plain")
 
+
 @app.get("/")
 def root():
     return {
@@ -220,9 +238,11 @@ def root():
         "version": "3.0.0",
         "docs": "/docs",
         "api_v1": API_V1,
-        "api_v2": API_V2
+        "api_v2": API_V2,
     }
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,5 +1,5 @@
-import pytest
 from app.services.career_progress_service import career_progress_service
+
 
 def test_career_progress_dashboard():
     dash = career_progress_service.get_progress_dashboard(user_id=1)

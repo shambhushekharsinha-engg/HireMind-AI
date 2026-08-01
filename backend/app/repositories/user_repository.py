@@ -1,7 +1,9 @@
 from typing import Optional
-from sqlalchemy.orm import Session
+
+from app.models.all_models import PasswordResetToken, User
 from app.repositories.base_repository import BaseRepository
-from app.models.all_models import User, PasswordResetToken
+from sqlalchemy.orm import Session
+
 
 class UserRepository(BaseRepository[User]):
     def __init__(self):
@@ -14,12 +16,7 @@ class UserRepository(BaseRepository[User]):
         return db.query(User).filter(User.mobile_number == mobile_number, User.deleted_at.is_(None)).first()
 
     def create_reset_token(self, db: Session, user_id: int, token_hash: str, expires_at) -> PasswordResetToken:
-        reset_token = PasswordResetToken(
-            user_id=user_id,
-            token_hash=token_hash,
-            expires_at=expires_at,
-            is_used=False
-        )
+        reset_token = PasswordResetToken(user_id=user_id, token_hash=token_hash, expires_at=expires_at, is_used=False)
         db.add(reset_token)
         db.commit()
         db.refresh(reset_token)
@@ -27,10 +24,16 @@ class UserRepository(BaseRepository[User]):
 
     def get_valid_reset_token(self, db: Session, token_hash: str) -> Optional[PasswordResetToken]:
         import datetime
-        return db.query(PasswordResetToken).filter(
-            PasswordResetToken.token_hash == token_hash,
-            PasswordResetToken.is_used.is_(False),
-            PasswordResetToken.expires_at > datetime.datetime.utcnow()
-        ).first()
+
+        return (
+            db.query(PasswordResetToken)
+            .filter(
+                PasswordResetToken.token_hash == token_hash,
+                PasswordResetToken.is_used.is_(False),
+                PasswordResetToken.expires_at > datetime.datetime.utcnow(),
+            )
+            .first()
+        )
+
 
 user_repository = UserRepository()

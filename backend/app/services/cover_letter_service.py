@@ -1,15 +1,23 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from app.services.nlp_engine import NLPEngine
 
-class CoverLetterService:
 
+class CoverLetterService:
     @classmethod
-    def generate_cover_letter(cls, candidate_name: str, company_name: str, job_title: str, resume_text: str, job_description: str) -> Dict[str, Any]:
+    def generate_cover_letter(
+        cls,
+        candidate_name: str,
+        company_name: str,
+        job_title: str,
+        resume_text: str,
+        job_description: str,
+    ) -> Dict[str, Any]:
         skills = NLPEngine.extract_skills(resume_text or "")
         top_skills = ", ".join(skills[:4]) if skills else "software engineering, Python, and scalable system design"
 
         salutation = f"Dear Hiring Team at {company_name or 'the Organization'},"
-        
+
         opening = (
             f"I am writing to express my strong enthusiasm for the {job_title or 'Software Engineer'} position at {company_name or 'your company'}. "
             f"With a proven background in building production-ready applications and technical expertise spanning {top_skills}, "
@@ -17,9 +25,9 @@ class CoverLetterService:
         )
 
         body_paragraph = (
-            f"Throughout my technical journey, I have focused on building scalable, reliable, and user-centric software solutions. "
-            f"My technical toolset aligns closely with the qualifications outlined in your job posting. "
-            f"I thrive in fast-paced collaborative environments, leveraging data-driven decision making, clean code practices, and continuous integration to deliver tangible impact."
+            "Throughout my technical journey, I have focused on building scalable, reliable, and user-centric software solutions. "
+            "My technical toolset aligns closely with the qualifications outlined in your job posting. "
+            "I thrive in fast-paced collaborative environments, leveraging data-driven decision making, clean code practices, and continuous integration to deliver tangible impact."
         )
 
         closing = (
@@ -36,5 +44,5 @@ class CoverLetterService:
             "company_name": company_name,
             "job_title": job_title,
             "cover_letter_text": full_letter,
-            "highlighted_skills": skills[:4]
+            "highlighted_skills": skills[:4],
         }

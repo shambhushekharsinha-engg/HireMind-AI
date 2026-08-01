@@ -1,15 +1,33 @@
 import re
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
 from app.services.kaggle_dataset_engine import KaggleDatasetEngine
 
 ACTION_VERBS = {
-    "developed", "engineered", "implemented", "spearheaded", "architected", "optimized",
-    "designed", "built", "created", "led", "managed", "deployed", "scaled", "reduced",
-    "increased", "improved", "automated", "launched", "refactored", "integrated"
+    "developed",
+    "engineered",
+    "implemented",
+    "spearheaded",
+    "architected",
+    "optimized",
+    "designed",
+    "built",
+    "created",
+    "led",
+    "managed",
+    "deployed",
+    "scaled",
+    "reduced",
+    "increased",
+    "improved",
+    "automated",
+    "launched",
+    "refactored",
+    "integrated",
 }
 
-class ATSEngine:
 
+class ATSEngine:
     @classmethod
     def evaluate(cls, raw_text: str, sections: Dict[str, str], skills: List[str]) -> Dict[str, Any]:
         text_lower = raw_text.lower()
@@ -28,7 +46,7 @@ class ATSEngine:
             "skills": 4.0,
             "experience": 5.0,
             "education": 4.0,
-            "projects": 4.0
+            "projects": 4.0,
         }
         section_scores = {}
         total_section_points = 0.0
@@ -82,23 +100,23 @@ class ATSEngine:
             "formatting_hygiene": {
                 "score": round(contact_score + length_score, 1),
                 "max": 30.0,
-                "label": "Formatting & Contact Hygiene"
+                "label": "Formatting & Contact Hygiene",
             },
             "projects_impact": {
                 "score": round(section_scores.get("projects", 0.0) + (min(5.0, len(metrics_matches) * 1.5)), 1),
                 "max": 9.0,
-                "label": "Projects & Quantified Results"
+                "label": "Projects & Quantified Results",
             },
             "experience_verbs": {
                 "score": round(section_scores.get("experience", 0.0) + (min(10.0, len(found_verbs) * 1.5)), 1),
                 "max": 15.0,
-                "label": "Work Experience & Action Verbs"
+                "label": "Work Experience & Action Verbs",
             },
             "skills_match": {
                 "score": round(skill_score, 1),
                 "max": 35.0,
-                "label": "Technical & Core Skill Match"
-            }
+                "label": "Technical & Core Skill Match",
+            },
         }
 
         # Strengths & Suggestions
@@ -106,9 +124,13 @@ class ATSEngine:
         suggestions = []
 
         if skill_score >= 25:
-            strengths.append(f"Strong skill representation ({len(skills)} skills detected for {industry_info['primary_industry_field']})")
+            strengths.append(
+                f"Strong skill representation ({len(skills)} skills detected for {industry_info['primary_industry_field']})"
+            )
         else:
-            suggestions.append(f"Incorporate more domain-specific skills relevant to {industry_info['primary_industry_field']}.")
+            suggestions.append(
+                f"Incorporate more domain-specific skills relevant to {industry_info['primary_industry_field']}."
+            )
 
         if section_scores.get("experience", 0) > 0:
             strengths.append("Structured Work Experience section detected")
@@ -134,12 +156,11 @@ class ATSEngine:
                 "sections_completeness": round(total_section_points, 1),
                 "length_hygiene": round(length_score, 1),
                 "impact_metrics": round(impact_score, 1),
-                "formatting_contact": round(contact_score, 1)
+                "formatting_contact": round(contact_score, 1),
             },
             "explainable_breakdown": subscore_breakdown,
             "strengths": strengths,
             "suggestions": suggestions,
             "found_action_verbs": found_verbs,
-            "metrics_count": len(metrics_matches)
+            "metrics_count": len(metrics_matches),
         }
-

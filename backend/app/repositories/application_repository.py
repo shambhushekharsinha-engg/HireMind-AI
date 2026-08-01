@@ -1,17 +1,18 @@
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from app.repositories.base_repository import BaseRepository
+from typing import List, Optional
+
 from app.models.all_models import JobApplication
+from app.repositories.base_repository import BaseRepository
+from sqlalchemy.orm import Session
+
 
 class ApplicationRepository(BaseRepository[JobApplication]):
     def __init__(self):
         super().__init__(JobApplication)
 
-    def get_by_user_id(self, db: Session, user_id: int, status: str = None, skip: int = 0, limit: int = 100) -> List[JobApplication]:
-        q = db.query(JobApplication).filter(
-            JobApplication.user_id == user_id,
-            JobApplication.deleted_at.is_(None)
-        )
+    def get_by_user_id(
+        self, db: Session, user_id: int, status: str = None, skip: int = 0, limit: int = 100
+    ) -> List[JobApplication]:
+        q = db.query(JobApplication).filter(JobApplication.user_id == user_id, JobApplication.deleted_at.is_(None))
         if status:
             q = q.filter(JobApplication.status == status)
         return q.offset(skip).limit(limit).all()
@@ -25,5 +26,6 @@ class ApplicationRepository(BaseRepository[JobApplication]):
         db.commit()
         db.refresh(app_obj)
         return app_obj
+
 
 application_repository = ApplicationRepository()

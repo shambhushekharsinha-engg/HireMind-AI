@@ -1,7 +1,7 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class PortfolioService:
-
     @classmethod
     def generate_portfolio_html(cls, data: Dict[str, Any], theme: str = "dark") -> str:
         name = data.get("full_name", "Developer Portfolio")
@@ -19,14 +19,19 @@ class PortfolioService:
         card_bg = "#1e293b" if theme == "dark" else "#ffffff"
         accent_color = "#6366f1"
 
-        skills_html = "".join([f'<span style="background:{accent_color}22; color:{accent_color}; border:1px solid {accent_color}44; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; margin:4px; display:inline-block;">{s}</span>' for s in skills])
+        skills_html = "".join(
+            [
+                f'<span style="background:{accent_color}22; color:{accent_color}; border:1px solid {accent_color}44; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; margin:4px; display:inline-block;">{s}</span>'
+                for s in skills
+            ]
+        )
 
         exp_html = ""
         for exp in experience:
             role = exp.get("role", "Software Engineer")
             company = exp.get("company", "Tech Co")
             duration = exp.get("duration", "2024 - Present")
-            exp_html += f'''
+            exp_html += f"""
             <div style="background:{card_bg}; padding:20px; border-radius:12px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0; font-size:16px; color:{text_color};">{role}</h3>
@@ -34,9 +39,9 @@ class PortfolioService:
                 </div>
                 <p style="margin:4px 0 0 0; font-size:14px; opacity:0.8;">{company}</p>
             </div>
-            '''
+            """
 
-        html_template = f'''<!DOCTYPE html>
+        html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -77,9 +82,9 @@ class PortfolioService:
             <h1>{name}</h1>
             <p class="subtitle">{summary}</p>
             <div class="contacts">
-                {f'<a href="mailto:{email}">Email</a>' if email else ''}
-                {f'<a href="https://{linkedin}" target="_blank">LinkedIn</a>' if linkedin else ''}
-                {f'<a href="https://{github}" target="_blank">GitHub</a>' if github else ''}
+                {f'<a href="mailto:{email}">Email</a>' if email else ""}
+                {f'<a href="https://{linkedin}" target="_blank">LinkedIn</a>' if linkedin else ""}
+                {f'<a href="https://{github}" target="_blank">GitHub</a>' if github else ""}
             </div>
         </header>
 
@@ -98,5 +103,5 @@ class PortfolioService:
         </footer>
     </div>
 </body>
-</html>'''
+</html>"""
         return html_template

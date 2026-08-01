@@ -1,27 +1,34 @@
-import random
-import secrets
 import hashlib
+import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict
-from fastapi import APIRouter, Depends, HTTPException, status, Form
+from typing import Dict, Optional
+
+from app.core.config import settings
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_password_hash,
+    verify_password,
+)
+from app.database.session import get_db
+from app.repositories.user_repository import user_repository
+from app.schemas.all_schemas import Token, UserCreate, UserLogin, UserResponse
+from app.services.audit_service import audit_service
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-
-from app.database.session import get_db
-from app.repositories.user_repository import user_repository
-from app.schemas.all_schemas import UserCreate, UserLogin, Token, UserResponse
-from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
-from app.core.config import settings
-from app.services.audit_service import audit_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 OTP_STORE: Dict[str, str] = {}
 
+
 class OTPRequest(BaseModel):
     email: Optional[str] = Field(None, example="user@example.com")
     mobile_number: Optional[str] = Field(None, example="+1234567890")
+
 
 class OTPVerifyRequest(BaseModel):
     email: Optional[str] = Field(None, example="user@example.com")
@@ -29,20 +36,25 @@ class OTPVerifyRequest(BaseModel):
     otp_code: str = Field(..., example="123456")
     role: Optional[str] = Field("student", example="student")
 
+
 class ForgotPasswordRequest(BaseModel):
     email: str = Field(..., example="user@example.com")
+
 
 class ResetPasswordRequest(BaseModel):
     email: str = Field(..., example="user@example.com")
     reset_token: str = Field(..., example="raw_reset_token_here")
     new_password: str = Field(..., example="NewSecurePassword123!")
 
+
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+
 
 class VerifyEmailRequest(BaseModel):
     email: str = Field(..., example="user@example.com")
     verification_code: str = Field(..., example="123456")
+
 
 def build_token_response(user) -> dict:
     access_token = create_access_token(subject=user.id)
@@ -56,9 +68,10 @@ def build_token_response(user) -> dict:
             "email": user.email,
             "mobile_number": user.mobile_number,
             "full_name": user.full_name,
-            "role": user.role
-        }
+            "role": user.role,
+        },
     }
+
 
 @router.post("/register", response_model=UserResponse)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
@@ -66,16 +79,20 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Email is already registered")
 
-    user_obj = user_repository.create(db, {
-        "email": user_in.email,
-        "mobile_number": user_in.mobile_number,
-        "hashed_password": get_password_hash(user_in.password),
-        "full_name": user_in.full_name,
-        "role": user_in.role or "student"
-    })
-    
+    user_obj = user_repository.create(
+        db,
+        {
+            "email": user_in.email,
+            "mobile_number": user_in.mobile_number,
+            "hashed_password": get_password_hash(user_in.password),
+            "full_name": user_in.full_name,
+            "role": user_in.role or "student",
+        },
+    )
+
     audit_service.log_event("USER_REGISTER", user_id=user_obj.id, email=user_obj.email)
     return user_obj
+
 
 @router.post("/generate-otp")
 def generate_otp(request: OTPRequest):
@@ -90,8 +107,9 @@ def generate_otp(request: OTPRequest):
         "status": "success",
         "message": f"OTP sent to {target}",
         "otp_sent_to": target,
-        "demo_otp": otp_code
+        "demo_otp": otp_code,
     }
+
 
 @router.post("/verify-otp", response_model=Token)
 def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
@@ -113,18 +131,22 @@ def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
         clean_target = target.replace("+", "").replace(" ", "").replace("@", "_at_")
         default_email = request.email or f"user_{clean_target}@hiremind.ai"
         try:
-            user = user_repository.create(db, {
-                "email": default_email,
-                "mobile_number": request.mobile_number,
-                "hashed_password": get_password_hash("otp_verified_pass"),
-                "full_name": f"Verified User ({target})",
-                "role": request.role or "student"
-            })
+            user = user_repository.create(
+                db,
+                {
+                    "email": default_email,
+                    "mobile_number": request.mobile_number,
+                    "hashed_password": get_password_hash("otp_verified_pass"),
+                    "full_name": f"Verified User ({target})",
+                    "role": request.role or "student",
+                },
+            )
         except Exception:
             user = user_repository.get_by_email(db, default_email)
 
     audit_service.log_event("LOGIN_OTP", user_id=user.id if user else None, email=target)
     return build_token_response(user)
+
 
 @router.post("/login", response_model=Token)
 def login_json(login_in: UserLogin, db: Session = Depends(get_db)):
@@ -141,17 +163,18 @@ def login_json(login_in: UserLogin, db: Session = Depends(get_db)):
     audit_service.log_event("LOGIN_SUCCESS", user_id=user.id, email=user.email)
     return build_token_response(user)
 
+
 @router.post("/forgot-password")
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = user_repository.get_by_email(db, request.email)
     if not user:
         return {
             "status": "success",
-            "message": f"If an account exists for {request.email}, password reset instructions have been sent."
+            "message": f"If an account exists for {request.email}, password reset instructions have been sent.",
         }
 
     raw_token = secrets.token_urlsafe(32)
-    token_hash = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+    token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
     expires_at = datetime.utcnow() + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
 
     user_repository.create_reset_token(db, user.id, token_hash, expires_at)
@@ -160,12 +183,13 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     return {
         "status": "success",
         "message": f"Password reset token sent to {request.email} (expires in 15 minutes).",
-        "reset_token": raw_token
+        "reset_token": raw_token,
     }
+
 
 @router.post("/reset-password")
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
-    token_hash = hashlib.sha256(request.reset_token.encode('utf-8')).hexdigest()
+    token_hash = hashlib.sha256(request.reset_token.encode("utf-8")).hexdigest()
     reset_record = user_repository.get_valid_reset_token(db, token_hash)
 
     if not reset_record:
@@ -180,7 +204,11 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
 
     audit_service.log_event("PASSWORD_RESET_COMPLETED", user_id=user.id, email=user.email)
-    return {"status": "success", "message": "Password successfully updated. Single-use token invalidated."}
+    return {
+        "status": "success",
+        "message": "Password successfully updated. Single-use token invalidated.",
+    }
+
 
 @router.post("/refresh", response_model=Token)
 def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
@@ -195,6 +223,7 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
 
     return build_token_response(user)
 
+
 @router.post("/verify-email")
 def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db)):
     if request.verification_code != "123456" and request.verification_code != "888888":
@@ -204,26 +233,46 @@ def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db)):
         user_repository.update(db, user, {"is_active": True})
     return {"status": "success", "message": "Email address verified successfully."}
 
+
 @router.post("/demo-login", response_model=Token)
 def demo_login(role: Optional[str] = "student", db: Session = Depends(get_db)):
     demo_users = {
-        "student": {"email": "alex.student@hiremind.ai", "mobile_number": "+919876543210", "full_name": "Alex Mercer (Demo Student)", "role": "student"},
-        "recruiter": {"email": "recruiter@apextech.com", "mobile_number": "+919876543211", "full_name": "Sarah Recruiter (Demo Recruiter)", "role": "recruiter"},
-        "admin": {"email": "admin@hiremind.ai", "mobile_number": "+919876543212", "full_name": "Shambhu Admin (Demo Admin)", "role": "admin"}
+        "student": {
+            "email": "alex.student@hiremind.ai",
+            "mobile_number": "+919876543210",
+            "full_name": "Alex Mercer (Demo Student)",
+            "role": "student",
+        },
+        "recruiter": {
+            "email": "recruiter@apextech.com",
+            "mobile_number": "+919876543211",
+            "full_name": "Sarah Recruiter (Demo Recruiter)",
+            "role": "recruiter",
+        },
+        "admin": {
+            "email": "admin@hiremind.ai",
+            "mobile_number": "+919876543212",
+            "full_name": "Shambhu Admin (Demo Admin)",
+            "role": "admin",
+        },
     }
     user_info = demo_users.get(role.lower(), demo_users["student"])
     user = user_repository.get_by_email(db, user_info["email"])
     if not user:
-        user = user_repository.create(db, {
-            "email": user_info["email"],
-            "mobile_number": user_info["mobile_number"],
-            "hashed_password": get_password_hash("demo_pass"),
-            "full_name": user_info["full_name"],
-            "role": user_info["role"]
-        })
+        user = user_repository.create(
+            db,
+            {
+                "email": user_info["email"],
+                "mobile_number": user_info["mobile_number"],
+                "hashed_password": get_password_hash("demo_pass"),
+                "full_name": user_info["full_name"],
+                "role": user_info["role"],
+            },
+        )
 
     audit_service.log_event("DEMO_LOGIN", user_id=user.id, email=user.email)
     return build_token_response(user)
+
 
 @router.post("/token", response_model=Token)
 def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):

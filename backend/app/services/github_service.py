@@ -1,8 +1,8 @@
 import re
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class GitHubService:
-
     @classmethod
     def analyze_repo_url(cls, repo_url: str) -> Dict[str, Any]:
         match = re.search(r"github\.com/([\w\-]+)/([\w\-]+)", repo_url, re.IGNORECASE)
@@ -17,7 +17,7 @@ class GitHubService:
         suggestions = [
             "Ensure a top-level README.md contains architectural diagrams, setup commands, and API endpoint examples.",
             "Add a LICENSE file and clear CONTRIBUTING.md guidelines for open-source visibility.",
-            "Include continuous integration workflow (.github/workflows/ci.yml) to demonstrate testing rigor."
+            "Include continuous integration workflow (.github/workflows/ci.yml) to demonstrate testing rigor.",
         ]
 
         return {
@@ -27,5 +27,5 @@ class GitHubService:
             "readme_quality_score": readme_score,
             "detected_languages": ["Python", "TypeScript", "Dockerfile", "Shell"],
             "commit_consistency": commit_frequency_rating,
-            "actionable_improvements": suggestions
+            "actionable_improvements": suggestions,
         }

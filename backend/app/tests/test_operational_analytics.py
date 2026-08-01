@@ -1,5 +1,5 @@
-import pytest
 from app.services.analytics_service import analytics_service
+
 
 def test_operational_analytics():
     analytics_service.record_feature_usage("ResumeRewrite")

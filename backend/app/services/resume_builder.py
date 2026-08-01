@@ -1,34 +1,67 @@
 import os
-from typing import Dict, Any
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
+from typing import Any, Dict
+
 from app.core.config import settings
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
+
 
 class ResumeBuilderService:
-
     @classmethod
     def generate_resume_pdf(cls, data: Dict[str, Any], template_name: str = "Modern") -> str:
         full_name = data.get("full_name", "Candidate Name")
         pdf_filename = f"Resume_Builder_{full_name.replace(' ', '_')}.pdf"
         output_path = os.path.join(settings.REPORTS_DIR, pdf_filename)
 
-        doc = SimpleDocTemplate(output_path, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+        doc = SimpleDocTemplate(
+            output_path,
+            pagesize=letter,
+            rightMargin=36,
+            leftMargin=36,
+            topMargin=36,
+            bottomMargin=36,
+        )
         styles = getSampleStyleSheet()
 
         PRIMARY_COLOR = colors.HexColor("#4F46E5") if template_name == "Modern" else colors.HexColor("#1F2937")
 
-        name_style = ParagraphStyle("RName", parent=styles["Title"], fontSize=20, leading=24, textColor=PRIMARY_COLOR, alignment=0)
-        contact_style = ParagraphStyle("RContact", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#4B5563"))
-        heading_style = ParagraphStyle("RHeading", parent=styles["Heading2"], fontSize=13, leading=16, textColor=PRIMARY_COLOR, spaceBefore=10, spaceAfter=4)
-        body_style = ParagraphStyle("RBody", parent=styles["Normal"], fontSize=9.5, leading=13, textColor=colors.HexColor("#111827"))
+        name_style = ParagraphStyle(
+            "RName",
+            parent=styles["Title"],
+            fontSize=20,
+            leading=24,
+            textColor=PRIMARY_COLOR,
+            alignment=0,
+        )
+        contact_style = ParagraphStyle(
+            "RContact", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#4B5563")
+        )
+        heading_style = ParagraphStyle(
+            "RHeading",
+            parent=styles["Heading2"],
+            fontSize=13,
+            leading=16,
+            textColor=PRIMARY_COLOR,
+            spaceBefore=10,
+            spaceAfter=4,
+        )
+        body_style = ParagraphStyle(
+            "RBody",
+            parent=styles["Normal"],
+            fontSize=9.5,
+            leading=13,
+            textColor=colors.HexColor("#111827"),
+        )
 
         story = []
 
         # Name & Contact Header
         story.append(Paragraph(f"<b>{full_name}</b>", name_style))
-        contact_info = f"{data.get('email', '')} | {data.get('phone', '')} | {data.get('linkedin', '')} | {data.get('github', '')}"
+        contact_info = (
+            f"{data.get('email', '')} | {data.get('phone', '')} | {data.get('linkedin', '')} | {data.get('github', '')}"
+        )
         story.append(Paragraph(contact_info, contact_style))
         story.append(HRFlowable(width="100%", thickness=1.5, color=PRIMARY_COLOR, spaceAfter=10, spaceBefore=5))
 

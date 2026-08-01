@@ -1,27 +1,30 @@
 import os
 import re
-from typing import Dict, Any
+from typing import Any, Dict
 
 try:
     from pypdf import PdfReader
+
     HAS_PYPDF = True
 except ImportError:
     HAS_PYPDF = False
 
 try:
     import pdfplumber
+
     HAS_PDFPLUMBER = True
 except ImportError:
     HAS_PDFPLUMBER = False
 
 try:
     import docx
+
     HAS_DOCX = True
 except ImportError:
     HAS_DOCX = False
 
-class ResumeParser:
 
+class ResumeParser:
     @staticmethod
     def extract_text_from_pdf(file_path: str) -> str:
         text = ""
@@ -36,7 +39,7 @@ class ResumeParser:
                     return text.strip()
             except Exception:
                 pass
-        
+
         # Fallback to PyPDF
         if HAS_PYPDF:
             try:
@@ -47,7 +50,7 @@ class ResumeParser:
                         text += extracted + "\n"
             except Exception as e:
                 print(f"Error reading PDF: {e}")
-            
+
         return text.strip()
 
     @staticmethod
@@ -79,10 +82,7 @@ class ResumeParser:
         cleaned_text = cls.clean_text(raw_text)
         sections = cls.identify_sections(cleaned_text)
 
-        return {
-            "raw_text": cleaned_text,
-            "sections": sections
-        }
+        return {"raw_text": cleaned_text, "sections": sections}
 
     @staticmethod
     def clean_text(text: str) -> str:
@@ -101,21 +101,21 @@ class ResumeParser:
             "experience": "",
             "education": "",
             "projects": "",
-            "certifications": ""
+            "certifications": "",
         }
-        
+
         section_patterns = {
             "summary": r"(summary|objective|profile|about me|professional summary)",
             "skills": r"(skills|technical skills|key competencies|core competencies|technologies|expertise)",
             "experience": r"(experience|work experience|employment|history|professional experience|internships)",
             "education": r"(education|academic background|qualifications|degrees)",
             "projects": r"(projects|key projects|academic projects|personal projects)",
-            "certifications": r"(certifications|licenses|courses|certificates|achievements)"
+            "certifications": r"(certifications|licenses|courses|certificates|achievements)",
         }
 
         lines = text.split("\n")
         current_section = "summary"
-        
+
         for line in lines:
             line_lower = line.lower().strip()
             # Check if header line

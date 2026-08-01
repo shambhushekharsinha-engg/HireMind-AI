@@ -1,8 +1,9 @@
-from fastapi import APIRouter
 from app.schemas.all_schemas import BulletRewriteRequest, BulletRewriteResponse
 from app.services.resume_rewriter import ResumeRewriter
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/rewriter", tags=["Resume Bullet Rewriter"])
+
 
 @router.post("/rewrite", response_model=BulletRewriteResponse)
 def rewrite_bullet(request: BulletRewriteRequest):

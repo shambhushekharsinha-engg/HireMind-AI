@@ -1,13 +1,16 @@
-from typing import Generic, TypeVar, Type, Optional, List, Any
-from sqlalchemy.orm import Session
+from typing import Any, Generic, List, Optional, Type, TypeVar
+
 from app.database.base import Base
+from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType", bound=Base)
+
 
 class BaseRepository(Generic[ModelType]):
     """
     Generic Base Repository providing standard CRUD methods over SQLAlchemy models.
     """
+
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
@@ -32,11 +35,11 @@ class BaseRepository(Generic[ModelType]):
             update_data = obj_in
         else:
             update_data = obj_in.__dict__
-        
+
         for field in update_data:
             if hasattr(db_obj, field) and field != "id":
                 setattr(db_obj, field, update_data[field])
-                
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -46,13 +49,14 @@ class BaseRepository(Generic[ModelType]):
         db_obj = db.query(self.model).filter(self.model.id == id).first()
         if not db_obj:
             return False
-        
+
         if soft and hasattr(db_obj, "deleted_at"):
             import datetime
+
             db_obj.deleted_at = datetime.datetime.utcnow()
             db.add(db_obj)
         else:
             db.delete(db_obj)
-            
+
         db.commit()
         return True

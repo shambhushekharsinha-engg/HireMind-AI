@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel
+
 
 # --- Auth & User ---
 class UserCreate(BaseModel):
@@ -10,10 +12,12 @@ class UserCreate(BaseModel):
     full_name: Optional[str] = None
     role: Optional[str] = "student"
 
+
 class UserLogin(BaseModel):
     email: Optional[str] = None
     mobile_number: Optional[str] = None
     password: str
+
 
 class Token(BaseModel):
     access_token: str
@@ -34,6 +38,7 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # --- Resume Builder ---
 class ResumeBuilderData(BaseModel):
     title: Optional[str] = "My Professional Resume"
@@ -49,6 +54,7 @@ class ResumeBuilderData(BaseModel):
     skills: Optional[List[str]] = []
     projects: Optional[List[Dict[str, Any]]] = []
 
+
 # --- Job Application Tracker ---
 class ApplicationCreate(BaseModel):
     company: str
@@ -58,9 +64,11 @@ class ApplicationCreate(BaseModel):
     salary_range: Optional[str] = ""
     notes: Optional[str] = ""
 
+
 class ApplicationUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
+
 
 class ApplicationResponse(BaseModel):
     id: int
@@ -75,15 +83,18 @@ class ApplicationResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # --- AI Career Coach ---
 class CoachAskRequest(BaseModel):
     question: str
     user_context: Optional[Dict[str, Any]] = {}
 
+
 class CoachAskResponse(BaseModel):
     answer: str
     suggested_followups: List[str]
     recommended_resources: List[str]
+
 
 # --- Resume Analysis ---
 class ResumeAnalysisResult(BaseModel):
@@ -99,12 +110,14 @@ class ResumeAnalysisResult(BaseModel):
     section_scores: Dict[str, float]
     parsed_sections: Dict[str, str]
 
+
 # --- Job Match ---
 class JobMatchRequest(BaseModel):
     job_title: Optional[str] = "Target Role"
     job_description: str
     resume_text: Optional[str] = None
     resume_id: Optional[int] = None
+
 
 class JobMatchResult(BaseModel):
     match_score: float
@@ -113,11 +126,13 @@ class JobMatchResult(BaseModel):
     recommendations: List[str]
     role_fit: str
 
+
 # --- Career Roadmap ---
 class CareerRoadmapRequest(BaseModel):
     target_role: Optional[str] = None
     resume_id: Optional[int] = None
     resume_text: Optional[str] = None
+
 
 class RoadmapStep(BaseModel):
     step: int
@@ -128,6 +143,7 @@ class RoadmapStep(BaseModel):
     recommended_projects: List[str]
     recommended_certifications: List[str]
 
+
 class CareerRoadmapResult(BaseModel):
     target_role: str
     recommended_roles: List[str]
@@ -135,11 +151,13 @@ class CareerRoadmapResult(BaseModel):
     estimated_salary: Dict[str, str]
     roadmap: List[RoadmapStep]
 
+
 # --- Interview Prep ---
 class InterviewGenerateRequest(BaseModel):
     target_role: str
     resume_text: Optional[str] = None
     experience_level: Optional[str] = "Intermediate"
+
 
 class InterviewQuestion(BaseModel):
     id: int
@@ -148,14 +166,17 @@ class InterviewQuestion(BaseModel):
     hints: List[str]
     key_points_expected: List[str]
 
+
 class InterviewSessionResult(BaseModel):
     target_role: str
     questions: List[InterviewQuestion]
+
 
 class AnswerEvalRequest(BaseModel):
     question: str
     user_answer: str
     expected_points: Optional[List[str]] = []
+
 
 class AnswerEvalResult(BaseModel):
     score: float
@@ -163,16 +184,19 @@ class AnswerEvalResult(BaseModel):
     strengths: List[str]
     improvements: List[str]
 
+
 # --- Bullet Rewriter ---
 class BulletRewriteRequest(BaseModel):
     bullet_point: str
     target_role: Optional[str] = "Software Engineer"
+
 
 class BulletRewriteResponse(BaseModel):
     original: str
     rewritten_options: List[str]
     action_verbs_used: List[str]
     impact_score_boost: str
+
 
 # --- Feedback ---
 class FeedbackCreate(BaseModel):

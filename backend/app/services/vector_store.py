@@ -1,12 +1,15 @@
 import math
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List, Tuple
+
 from app.services.embedding_cache import embedding_cache
+
 
 class FAISSVectorStore:
     """
     Local FAISS / Cosine Similarity Vector Store for Knowledge Retrieval.
     Provides fast, local, dependency-free vector indexing for RAG context retrieval.
     """
+
     def __init__(self, dimension: int = 64):
         self.dimension = dimension
         self.documents: List[Dict[str, Any]] = []
@@ -25,7 +28,7 @@ class FAISSVectorStore:
         # Normalize vector
         magnitude = math.sqrt(sum(x * x for x in vec)) or 1.0
         normalized = [x / magnitude for x in vec]
-        
+
         embedding_cache.set(text, normalized)
         return normalized
 
@@ -50,5 +53,6 @@ class FAISSVectorStore:
 
         scored_results.sort(key=lambda x: x[1], reverse=True)
         return scored_results[:top_k]
+
 
 faiss_vector_store = FAISSVectorStore()

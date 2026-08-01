@@ -1,6 +1,6 @@
-import pytest
 from app.services.evaluation_engine import evaluation_engine
 from app.services.resume_quality_pipeline import resume_quality_pipeline
+
 
 def test_resume_quality_pipeline():
     sample_text = """
@@ -23,6 +23,7 @@ def test_resume_quality_pipeline():
     assert res["feature_breakdown"]["quantified_achievements"] > 50.0
     assert "built" in res["action_verbs_detected"] or "architected" in res["action_verbs_detected"]
 
+
 def test_unified_evaluation_engine():
     sample_text = """
     Jane Smith
@@ -40,7 +41,7 @@ def test_unified_evaluation_engine():
     Python, FastAPI, Docker, Kubernetes, PostgreSQL, Redis, REST APIs, Git
     """
     sample_jd = "Looking for Python, FastAPI, Docker, and Kubernetes developer."
-    
+
     eval_res = evaluation_engine.evaluate_resume(sample_text, job_description_text=sample_jd)
     assert "ats_score" in eval_res
     assert eval_res["ats_score"] >= 50.0

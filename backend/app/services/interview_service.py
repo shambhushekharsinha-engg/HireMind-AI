@@ -1,4 +1,5 @@
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
 
 class MultiDomainInterviewSimulator:
     """
@@ -11,18 +12,18 @@ class MultiDomainInterviewSimulator:
         "strict_tech_lead": {
             "name": "Strict Technical Lead",
             "tone": "Rigorous, deep-dive technical focus, zero tolerance for vague hand-waving.",
-            "target_timer_sec": 90
+            "target_timer_sec": 90,
         },
         "supportive_hr": {
             "name": "Supportive HR Recruiter",
             "tone": "Encouraging, values alignment, communication, and culture fit focus.",
-            "target_timer_sec": 60
+            "target_timer_sec": 60,
         },
         "vp_engineering": {
             "name": "VP of Engineering",
             "tone": "High-level architectural, trade-off, and business value focus.",
-            "target_timer_sec": 90
-        }
+            "target_timer_sec": 90,
+        },
     }
 
     @classmethod
@@ -30,7 +31,7 @@ class MultiDomainInterviewSimulator:
         cls,
         target_role: str = "Backend Engineer",
         resume_skills: List[str] = None,
-        personality_key: str = "strict_tech_lead"
+        personality_key: str = "strict_tech_lead",
     ) -> Dict[str, Any]:
         personality = cls.PERSONALITIES.get(personality_key, cls.PERSONALITIES["strict_tech_lead"])
         skills_str = ", ".join(resume_skills or ["Python", "FastAPI", "Docker"])
@@ -39,38 +40,38 @@ class MultiDomainInterviewSimulator:
             {
                 "id": "q1",
                 "domain": "Technical",
-                "question": f"How do you optimize asynchronous database queries in FastAPI when scaling to 10,000 requests per second?",
+                "question": "How do you optimize asynchronous database queries in FastAPI when scaling to 10,000 requests per second?",
                 "target_timer_sec": personality["target_timer_sec"],
-                "follow_up": "What specific index type would you use for composite column filters?"
+                "follow_up": "What specific index type would you use for composite column filters?",
             },
             {
                 "id": "q2",
                 "domain": "HR",
                 "question": "Why are you interested in transitioning into an Enterprise Engineering role at our company?",
                 "target_timer_sec": 60,
-                "follow_up": "How does your career goal align with our 3-year technology roadmap?"
+                "follow_up": "How does your career goal align with our 3-year technology roadmap?",
             },
             {
                 "id": "q3",
                 "domain": "Behavioral",
                 "question": "Describe a situation where a critical database migration failed in production. How did you handle post-mortem and communication?",
                 "target_timer_sec": 90,
-                "follow_up": "What automated checks did you add to prevent recurrence?"
+                "follow_up": "What automated checks did you add to prevent recurrence?",
             },
             {
                 "id": "q4",
                 "domain": "Project Discussion",
                 "question": f"Walk us through the architecture of your top project utilizing {skills_str}. What trade-offs did you make?",
                 "target_timer_sec": 90,
-                "follow_up": "If you had 10x traffic tomorrow, which component breaks first?"
+                "follow_up": "If you had 10x traffic tomorrow, which component breaks first?",
             },
             {
                 "id": "q5",
                 "domain": "Resume Discussion",
                 "question": "Can you elaborate on the microservice optimization bullet point listed under your recent experience?",
                 "target_timer_sec": 60,
-                "follow_up": "How did you measure the 30% throughput increase?"
-            }
+                "follow_up": "How did you measure the 30% throughput increase?",
+            },
         ]
 
         return {
@@ -78,7 +79,7 @@ class MultiDomainInterviewSimulator:
             "interviewer_personality": personality,
             "total_questions": len(questions),
             "question_blueprint": questions,
-            "questions": [q["question"] for q in questions]
+            "questions": [q["question"] for q in questions],
         }
 
     @classmethod
@@ -94,9 +95,29 @@ class MultiDomainInterviewSimulator:
         relevance = min(100.0, max(40.0, (word_count / 30.0) * 100.0))
         completeness = min(100.0, max(50.0, (word_count / 40.0) * 100.0))
         communication = 85.0 if word_count >= 20 else 60.0
-        tech_depth = 90.0 if any(term in user_answer.lower() for term in ["async", "docker", "postgres", "redis", "index", "cache", "latency", "sub-50ms", "throughput"]) else 65.0
+        tech_depth = (
+            90.0
+            if any(
+                term in user_answer.lower()
+                for term in [
+                    "async",
+                    "docker",
+                    "postgres",
+                    "redis",
+                    "index",
+                    "cache",
+                    "latency",
+                    "sub-50ms",
+                    "throughput",
+                ]
+            )
+            else 65.0
+        )
 
-        overall_score = round((relevance * 0.25) + (completeness * 0.25) + (communication * 0.25) + (tech_depth * 0.25), 1)
+        overall_score = round(
+            (relevance * 0.25) + (completeness * 0.25) + (communication * 0.25) + (tech_depth * 0.25),
+            1,
+        )
 
         return {
             "question": question,
@@ -106,11 +127,12 @@ class MultiDomainInterviewSimulator:
                 "relevance": round(relevance, 1),
                 "completeness": round(completeness, 1),
                 "communication": round(communication, 1),
-                "technical_depth": round(tech_depth, 1)
+                "technical_depth": round(tech_depth, 1),
             },
             "suggested_follow_up": "What specific monitoring tools did you use to track query latency?",
-            "final_report": "Candidate demonstrated strong technical communication and depth. Recommend moving to system design round."
+            "final_report": "Candidate demonstrated strong technical communication and depth. Recommend moving to system design round.",
         }
+
 
 InterviewService = MultiDomainInterviewSimulator
 interview_service = MultiDomainInterviewSimulator()

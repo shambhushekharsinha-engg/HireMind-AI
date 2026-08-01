@@ -1,6 +1,7 @@
-import uuid
 import time
-from typing import Dict, Any, Optional, Callable
+import uuid
+from typing import Any, Callable, Dict, Optional
+
 
 class TaskState:
     PENDING = "PENDING"
@@ -9,6 +10,7 @@ class TaskState:
     CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+
 
 class TaskItem:
     def __init__(self, task_type: str, payload: Dict[str, Any], max_retries: int = 3):
@@ -23,11 +25,13 @@ class TaskItem:
         self.created_at = time.time()
         self.updated_at = time.time()
 
+
 class TaskQueueManager:
     """
     Async Task Queue Manager with support for retries, cancellations, and state tracking:
     PENDING -> RUNNING -> RETRYING -> CANCELLED -> COMPLETED -> FAILED
     """
+
     def __init__(self):
         self.tasks: Dict[str, TaskItem] = {}
 
@@ -46,7 +50,7 @@ class TaskQueueManager:
             "state": task.state,
             "retries": task.retries,
             "result": task.result,
-            "error": task.error
+            "error": task.error,
         }
 
     def cancel_task(self, job_id: str) -> bool:
@@ -82,5 +86,6 @@ class TaskQueueManager:
 
         task.updated_at = time.time()
         return self.get_status(job_id)
+
 
 task_queue_manager = TaskQueueManager()

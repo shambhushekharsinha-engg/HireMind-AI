@@ -1,24 +1,28 @@
-import os
 import json
-import time
+import os
 import statistics
+import time
+from typing import Any, Dict, List
+
 import psutil
 import requests
-from typing import List, Dict, Any
 
 BASE_URL = "http://127.0.0.1:8000"
 HISTORY_FILE = os.path.join(os.path.dirname(__file__), "benchmark_history.json")
 
+
 def get_git_commit() -> str:
     try:
         import subprocess
+
         return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("utf-8").strip()
     except Exception:
         return "ccb6847"
 
+
 def measure_benchmark(concurrent_users: int, duration_sec: int = 3) -> Dict[str, Any]:
     print(f"\n--- Running Load Benchmark for {concurrent_users} Concurrent User(s) ({duration_sec}s) ---")
-    
+
     start_memory = psutil.Process().memory_info().rss / (1024 * 1024)
     latencies: List[float] = []
     errors: int = 0
@@ -29,7 +33,7 @@ def measure_benchmark(concurrent_users: int, duration_sec: int = 3) -> Dict[str,
         t0 = time.time()
         try:
             res = requests.get(f"{BASE_URL}/health", timeout=2)
-            latency = (time.time() - t0) * 1000 # ms
+            latency = (time.time() - t0) * 1000  # ms
             total_requests += 1
             if res.status_code == 200:
                 latencies.append(latency)
@@ -61,7 +65,7 @@ def measure_benchmark(concurrent_users: int, duration_sec: int = 3) -> Dict[str,
         "p99_latency_ms": round(p99, 2),
         "error_rate_pct": round(error_rate, 2),
         "memory_growth_mb": round(memory_growth_mb, 2),
-        "cpu_usage_pct": round(end_cpu, 1)
+        "cpu_usage_pct": round(end_cpu, 1),
     }
 
     # Save to history file
@@ -72,7 +76,7 @@ def measure_benchmark(concurrent_users: int, duration_sec: int = 3) -> Dict[str,
                 history = json.load(f)
         except Exception:
             history = []
-            
+
     history.append(report)
     with open(HISTORY_FILE, "w") as f:
         json.dump(history, f, indent=2)
@@ -86,6 +90,7 @@ def measure_benchmark(concurrent_users: int, duration_sec: int = 3) -> Dict[str,
     print(f"  CPU Usage          : {report['cpu_usage_pct']} %")
 
     return report
+
 
 if __name__ == "__main__":
     for users in [1, 10, 100]:

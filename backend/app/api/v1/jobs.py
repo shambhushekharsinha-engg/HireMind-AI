@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.repositories.job_repository import job_repository
 from app.repositories.resume_repository import resume_repository
 from app.schemas.all_schemas import JobMatchRequest, JobMatchResult
 from app.services.job_match_service import JobMatchService
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/jobs", tags=["Job Matching"])
+
 
 @router.post("/match", response_model=JobMatchResult)
 def match_job(request: JobMatchRequest, db: Session = Depends(get_db)):
@@ -24,11 +25,14 @@ def match_job(request: JobMatchRequest, db: Session = Depends(get_db)):
 
     # Save match to DB using JobRepository
     if request.resume_id:
-        job_desc = job_repository.create(db, {
-            "title": request.job_title or "Target Position",
-            "description_text": request.job_description,
-            "required_skills": match_result["matched_skills"] + match_result["missing_skills"]
-        })
+        job_desc = job_repository.create(
+            db,
+            {
+                "title": request.job_title or "Target Position",
+                "description_text": request.job_description,
+                "required_skills": match_result["matched_skills"] + match_result["missing_skills"],
+            },
+        )
 
         job_repository.create_match(
             db,
@@ -37,7 +41,7 @@ def match_job(request: JobMatchRequest, db: Session = Depends(get_db)):
             match_score=match_result["match_score"],
             matched_skills=match_result["matched_skills"],
             missing_skills=match_result["missing_skills"],
-            recommendations=match_result["recommendations"]
+            recommendations=match_result["recommendations"],
         )
 
     return match_result

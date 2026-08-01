@@ -1,7 +1,7 @@
 import pytest
-from app.database.session import engine
 from app.database.base import Base
-import app.models.all_models
+from app.database.session import engine
+
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():

@@ -1,19 +1,21 @@
-from typing import Dict, Any, List
+from typing import Any, Dict
+
+from app.services.nlp_engine import NLPEngine
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from app.services.nlp_engine import NLPEngine
 
 # Try importing SentenceTransformer for dense embeddings
 try:
     from sentence_transformers import SentenceTransformer
+
     EMBEDDING_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
     HAS_SENTENCE_TRANSFORMER = True
 except Exception:
     EMBEDDING_MODEL = None
     HAS_SENTENCE_TRANSFORMER = False
 
-class JobMatchService:
 
+class JobMatchService:
     @classmethod
     def match(cls, resume_text: str, job_description: str) -> Dict[str, Any]:
         if not resume_text or not job_description:
@@ -22,7 +24,7 @@ class JobMatchService:
                 "matched_skills": [],
                 "missing_skills": [],
                 "recommendations": ["Provide both resume text and job description."],
-                "role_fit": "Low Fit"
+                "role_fit": "Low Fit",
             }
 
         # 1. Skill Extraction & Overlap
@@ -76,7 +78,7 @@ class JobMatchService:
         if missing_skills:
             top_missing = missing_skills[:5]
             recommendations.append(f"Incorporate missing key job skills: {', '.join(top_missing)}.")
-        
+
         if final_score < 70:
             recommendations.append("Tailor work experience bullet points using exact phrases from the job description.")
 
@@ -91,9 +93,8 @@ class JobMatchService:
                 "skill_overlap_score": round(skill_score, 1),
                 "tfidf_similarity": round(tfidf_sim, 1),
                 "dense_embedding_similarity": round(embedding_sim, 1),
-                "hybrid_semantic_score": round(hybrid_semantic_score, 1)
+                "hybrid_semantic_score": round(hybrid_semantic_score, 1),
             },
             "recommendations": recommendations,
-            "role_fit": role_fit
+            "role_fit": role_fit,
         }
-

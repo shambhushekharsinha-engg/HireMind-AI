@@ -1,7 +1,9 @@
 import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, JSON, Boolean
-from sqlalchemy.orm import relationship
+
 from app.database.base import Base
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
+
 
 class User(Base):
     __tablename__ = "users"
@@ -24,6 +26,7 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
 
+
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
@@ -35,6 +38,7 @@ class PasswordResetToken(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="reset_tokens")
+
 
 class Resume(Base):
     __tablename__ = "resumes"
@@ -57,6 +61,7 @@ class Resume(Base):
     job_matches = relationship("JobMatch", back_populates="resume", cascade="all, delete-orphan")
     analyses = relationship("ResumeAnalysis", back_populates="resume", cascade="all, delete-orphan")
 
+
 class ResumeRevision(Base):
     __tablename__ = "resume_revisions"
 
@@ -73,6 +78,7 @@ class ResumeRevision(Base):
 
     resume = relationship("Resume", back_populates="revisions")
     analyses = relationship("ResumeAnalysis", back_populates="revision", cascade="all, delete-orphan")
+
 
 class ResumeAnalysis(Base):
     __tablename__ = "resume_analyses"
@@ -93,6 +99,7 @@ class ResumeAnalysis(Base):
 
     resume = relationship("Resume", back_populates="analyses")
     revision = relationship("ResumeRevision", back_populates="analyses")
+
 
 class ResumeBuilderDraft(Base):
     __tablename__ = "resume_builder_drafts"
@@ -117,6 +124,7 @@ class ResumeBuilderDraft(Base):
 
     user = relationship("User", back_populates="builder_drafts")
 
+
 class JobDescription(Base):
     __tablename__ = "job_descriptions"
 
@@ -130,6 +138,7 @@ class JobDescription(Base):
     deleted_at = Column(DateTime, nullable=True, index=True)
 
     matches = relationship("JobMatch", back_populates="job", cascade="all, delete-orphan")
+
 
 class JobMatch(Base):
     __tablename__ = "job_matches"
@@ -146,6 +155,7 @@ class JobMatch(Base):
 
     resume = relationship("Resume", back_populates="job_matches")
     job = relationship("JobDescription", back_populates="matches")
+
 
 class JobApplication(Base):
     __tablename__ = "job_applications"
@@ -165,6 +175,7 @@ class JobApplication(Base):
 
     user = relationship("User", back_populates="applications")
 
+
 class CoachMessage(Base):
     __tablename__ = "coach_messages"
 
@@ -174,6 +185,7 @@ class CoachMessage(Base):
     message_text = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True, index=True)
+
 
 class CareerRoadmap(Base):
     __tablename__ = "career_roadmaps"
@@ -193,6 +205,7 @@ class CareerRoadmap(Base):
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True, index=True)
 
+
 class InterviewSession(Base):
     __tablename__ = "interview_sessions"
 
@@ -202,6 +215,7 @@ class InterviewSession(Base):
     questions = Column(JSON, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True, index=True)
+
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -217,6 +231,7 @@ class Notification(Base):
 
     user = relationship("User", back_populates="notifications")
 
+
 class Feedback(Base):
     __tablename__ = "feedbacks"
 
@@ -228,4 +243,3 @@ class Feedback(Base):
     deleted_at = Column(DateTime, nullable=True, index=True)
 
     user = relationship("User", back_populates="feedbacks")
-

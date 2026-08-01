@@ -1,14 +1,15 @@
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-from app.core.event_dispatcher import event_dispatcher, ResumeUploadedEvent, DomainEvent
 from app.core.error_codes import ErrorCode
+from app.core.event_dispatcher import DomainEvent, ResumeUploadedEvent, event_dispatcher
 from app.core.startup_check import StartupValidator
+from app.main import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 
+
 def test_startup_validator():
     assert StartupValidator.validate_all() is True
+
 
 def test_operational_health_dashboard_api():
     res = client.get("/health/dashboard")
@@ -18,6 +19,7 @@ def test_operational_health_dashboard_api():
     assert "components" in data
     assert "database" in data["components"]
     assert "faiss_vector_store" in data["components"]
+
 
 def test_internal_event_dispatcher():
     received = []
@@ -30,6 +32,7 @@ def test_internal_event_dispatcher():
 
     assert len(received) == 1
     assert received[0] == "test_resume.pdf"
+
 
 def test_error_code_formatting():
     formatted = ErrorCode.format_error(ErrorCode.HM1001, request_id="req-test-1")

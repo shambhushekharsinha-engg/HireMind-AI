@@ -1,5 +1,5 @@
-import pytest
 from app.services.task_queue import TaskQueueManager, TaskState
+
 
 def test_task_queue_lifecycle():
     manager = TaskQueueManager()
@@ -14,6 +14,7 @@ def test_task_queue_lifecycle():
     assert result["state"] == TaskState.COMPLETED
     assert result["result"] == "SUCCESS"
 
+
 def test_task_queue_cancellation():
     manager = TaskQueueManager()
     task = manager.enqueue("EMBED_GEN", {"chunks": []})
@@ -21,11 +22,13 @@ def test_task_queue_cancellation():
     assert cancelled is True
     assert manager.get_status(task.job_id)["state"] == TaskState.CANCELLED
 
+
 def test_task_queue_retry():
     manager = TaskQueueManager()
     task = manager.enqueue("FAIL_JOB", {}, max_retries=1)
 
     attempt = 0
+
     def failing_job():
         nonlocal attempt
         attempt += 1

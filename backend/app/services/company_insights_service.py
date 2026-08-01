@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 COMPANY_DATABASE = {
     "microsoft": {
@@ -13,8 +13,8 @@ COMPANY_DATABASE = {
             "Round 1: Data Structures & Algorithms (Trees, Graphs, Dynamic Programming)",
             "Round 2: Low-Level Design (Object Oriented Design & Clean Code)",
             "Round 3: High-Level System Design (Scalability, Caching, DB Partitioning)",
-            "Round 4: As-Appropriate (AA) Interview (Culture, Past Projects & System Leadership)"
-        ]
+            "Round 4: As-Appropriate (AA) Interview (Culture, Past Projects & System Leadership)",
+        ],
     },
     "google": {
         "company_name": "Google",
@@ -27,8 +27,8 @@ COMPANY_DATABASE = {
             "Technical Phone Screen: 45-min Algorithmic Problem Solving",
             "Onsite 1-3: Advanced Algorithms, Graph Traversals & Optimization",
             "Onsite 4: System Design & Distributed Data Storage",
-            "Googleyness: Leadership, Ambiguity & Behavioral Scenarios"
-        ]
+            "Googleyness: Leadership, Ambiguity & Behavioral Scenarios",
+        ],
     },
     "amazon": {
         "company_name": "Amazon",
@@ -40,13 +40,13 @@ COMPANY_DATABASE = {
         "interview_rounds": [
             "Online Assessment: Debugging + 2 Coding Questions + Work Simulation",
             "Onsite Technical: Object Oriented Design + Data Structures",
-            "Leadership Principles: 16 Leadership Principles Behavioral Deep-Dive"
-        ]
-    }
+            "Leadership Principles: 16 Leadership Principles Behavioral Deep-Dive",
+        ],
+    },
 }
 
-class CompanyInsightsService:
 
+class CompanyInsightsService:
     @classmethod
     def get_company_blueprint(cls, target: str) -> Dict[str, Any]:
         key = target.lower().strip()
@@ -59,12 +59,19 @@ class CompanyInsightsService:
             "company_name": target.title(),
             "role": "Software Engineer",
             "interview_difficulty": "Moderate to Hard (3.8 / 5.0)",
-            "expected_skills": ["Python", "JavaScript", "SQL", "Data Structures", "System Design", "Git"],
+            "expected_skills": [
+                "Python",
+                "JavaScript",
+                "SQL",
+                "Data Structures",
+                "System Design",
+                "Git",
+            ],
             "salary_range": "$100,000 - $150,000 / year",
             "hiring_trends": "High demand for Full-Stack development and Cloud Microservices.",
             "interview_rounds": [
                 "Round 1: Coding & Data Structures Screening",
                 "Round 2: System Design & Architecture Review",
-                "Round 3: Past Experience & Cultural Fit Interview"
-            ]
+                "Round 3: Past Experience & Cultural Fit Interview",
+            ],
         }
