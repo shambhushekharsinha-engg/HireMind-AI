@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import AuthLandingPage from './pages/AuthLandingPage';
 import DashboardPage from './pages/DashboardPage';
 import ATSAnalyzerPage from './pages/ATSAnalyzerPage';
 import JobMatcherPage from './pages/JobMatcherPage';
@@ -24,15 +25,36 @@ import CompanyInsightsPage from './pages/CompanyInsightsPage';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [latestAnalysis, setLatestAnalysis] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('hiremind_user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (e) {
+      console.error("Failed to load saved user session:", e);
+    }
+  }, []);
 
   const handleAnalysisComplete = (data) => {
     setLatestAnalysis(data);
   };
 
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+  };
+
+  // Auth Protection Gate: Display Auth Landing Page if not signed in
+  if (!user) {
+    return <AuthLandingPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
       {/* Top Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} user={user} setUser={setUser} />
 
       {/* Main Layout Container */}
       <div className="flex flex-1">

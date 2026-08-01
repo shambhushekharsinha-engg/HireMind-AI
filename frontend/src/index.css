@@ -59,6 +59,55 @@ body {
   filter: brightness(1.1);
 }
 
+/* 3D Tactile Interactive Buttons */
+.btn-3d-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  box-shadow: 0 5px 0 #3730a3, 0 10px 20px rgba(99, 102, 241, 0.4);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-3d-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3730a3, 0 14px 25px rgba(99, 102, 241, 0.5);
+  filter: brightness(1.1);
+}
+.btn-3d-primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #3730a3, 0 5px 10px rgba(99, 102, 241, 0.3);
+}
+
+.btn-3d-emerald {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 5px 0 #047857, 0 10px 20px rgba(16, 185, 129, 0.4);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-3d-emerald:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #047857, 0 14px 25px rgba(16, 185, 129, 0.5);
+  filter: brightness(1.1);
+}
+.btn-3d-emerald:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #047857, 0 5px 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-3d-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  box-shadow: 0 5px 0 #1d4ed8, 0 10px 20px rgba(6, 182, 212, 0.4);
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+.btn-3d-cyan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #1d4ed8, 0 14px 25px rgba(6, 182, 212, 0.5);
+  filter: brightness(1.1);
+}
+.btn-3d-cyan:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1d4ed8, 0 5px 10px rgba(6, 182, 212, 0.3);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
