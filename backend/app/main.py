@@ -40,15 +40,30 @@ app = FastAPI(
 )
 
 
-# 1. Security Headers Middleware
+# Helper function to ensure CORS headers are present on all responses (including errors)
+def add_cors_headers_to_response(response: Response, request: Request) -> Response:
+    origin = request.headers.get("origin") or "*"
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Vary"] = "Origin"
+    return response
+
+
+# 1. Universal Security & CORS Headers Middleware
 @app.middleware("http")
-async def add_security_headers(request: Request, call_next):
+async def add_security_and_cors_headers(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+        return add_cors_headers_to_response(response, request)
+
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:;"
-    return response
+    return add_cors_headers_to_response(response, request)
 
 
 # 2. Request ID & Observability Middleware
@@ -78,27 +93,30 @@ async def add_request_id_and_observability(request: Request, call_next):
     return response
 
 
-# Standardized Error Code Handlers
+# Standardized Error Code Handlers (with CORS Header Guarantee)
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     request_id = getattr(request.state, "request_id", "req-unknown")
     code = f"HM{exc.status_code}"
-    return JSONResponse(
+    response = JSONResponse(
         status_code=exc.status_code,
         content={
             "success": False,
+            "detail": exc.detail,
             "error": {"code": code, "message": exc.detail, "request_id": request_id},
         },
     )
+    return add_cors_headers_to_response(response, request)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     request_id = getattr(request.state, "request_id", "req-unknown")
-    return JSONResponse(
+    response = JSONResponse(
         status_code=422,
         content={
             "success": False,
+            "detail": "Invalid request payload structure or parameter types.",
             "error": {
                 "code": "HM422",
                 "message": "Invalid request payload structure or parameter types.",
@@ -107,9 +125,29 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             },
         },
     )
+    return add_cors_headers_to_response(response, request)
 
 
-# Universal Production-Ready CORS Middleware with Dynamic Origin Reflection
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled Exception: {str(exc)}", exc_info=True)
+    request_id = getattr(request.state, "request_id", "req-unknown")
+    response = JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "detail": f"Internal Server Error: {str(exc)}",
+            "error": {
+                "code": "HM500",
+                "message": f"Internal Server Error: {str(exc)}",
+                "request_id": request_id,
+            },
+        },
+    )
+    return add_cors_headers_to_response(response, request)
+
+
+# Universal CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
