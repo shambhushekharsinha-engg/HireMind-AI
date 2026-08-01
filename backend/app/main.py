@@ -41,17 +41,38 @@ def auto_migrate_schema():
         with engine.begin() as conn:
             dialect_name = engine.dialect.name
             if dialect_name in ["postgresql", "postgres"]:
+                # PostgreSQL ALTER TABLE ADD COLUMN IF NOT EXISTS
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS user_id INTEGER;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS title VARCHAR DEFAULT 'Main Resume';"))
+                conn.execute(
+                    text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
+                )
+                conn.execute(
+                    text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;")
+                )
+                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS filename VARCHAR;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS file_path VARCHAR;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS raw_text TEXT;"))
                 conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS parsed_sections JSONB;"))
-                conn.execute(text("ALTER TABLE resumes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS content_hash VARCHAR;"))
+                conn.execute(text("ALTER TABLE resume_revisions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+                conn.execute(text("ALTER TABLE resume_analyses ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
             else:
+                # SQLite PRAGMA table_info check & ADD COLUMN
                 res = conn.execute(text("PRAGMA table_info(resumes);")).fetchall()
                 cols = [r[1] for r in res]
+                if "user_id" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN user_id INTEGER;"))
                 if "title" not in cols:
                     conn.execute(text("ALTER TABLE resumes ADD COLUMN title VARCHAR DEFAULT 'Main Resume';"))
+                if "created_at" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN created_at DATETIME;"))
+                if "updated_at" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN updated_at DATETIME;"))
+                if "deleted_at" not in cols:
+                    conn.execute(text("ALTER TABLE resumes ADD COLUMN deleted_at DATETIME;"))
                 if "filename" not in cols:
                     conn.execute(text("ALTER TABLE resumes ADD COLUMN filename VARCHAR;"))
                 if "file_path" not in cols:
@@ -60,8 +81,6 @@ def auto_migrate_schema():
                     conn.execute(text("ALTER TABLE resumes ADD COLUMN raw_text TEXT;"))
                 if "parsed_sections" not in cols:
                     conn.execute(text("ALTER TABLE resumes ADD COLUMN parsed_sections JSON;"))
-                if "deleted_at" not in cols:
-                    conn.execute(text("ALTER TABLE resumes ADD COLUMN deleted_at DATETIME;"))
     except Exception as e:
         logger.warning(f"Auto-migration notice: {e}")
 
