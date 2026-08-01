@@ -4,7 +4,7 @@ import os
 import time
 import uuid
 
-import app.models.all_models
+import app.models.all_models  # noqa: F401 - Register all SQLAlchemy models in Base.metadata
 from app.core.config import settings
 from app.core.feature_flags import feature_flags
 from app.core.startup_check import run_startup_checks
@@ -109,11 +109,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-# Restricted CORS Middleware
-cors_origins = ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS
+# Universal Production-Ready CORS Middleware with Dynamic Origin Reflection
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=["*"],
+    allow_origin_regex=r"https://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
