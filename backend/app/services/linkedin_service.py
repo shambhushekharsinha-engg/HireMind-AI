@@ -36,10 +36,10 @@ class LinkedInService:
             "headline_seo_score": round(headline_score, 1),
             "detected_keywords": extracted_skills,
             "suggested_headlines": suggested_headlines,
-            "summary_improvements": summary_suggestions
-            if summary_suggestions
-            else ["Great About summary structure! Keep skills updated."],
-            "recruiter_searchability_rating": "High SEO Visibility"
-            if headline_score >= 70
-            else "Medium SEO Visibility",
+            "summary_improvements": (
+                summary_suggestions if summary_suggestions else ["Great About summary structure! Keep skills updated."]
+            ),
+            "recruiter_searchability_rating": (
+                "High SEO Visibility" if headline_score >= 70 else "Medium SEO Visibility"
+            ),
         }

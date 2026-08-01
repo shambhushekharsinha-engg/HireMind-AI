@@ -24,9 +24,9 @@ class BenchmarkingService:
         return {
             "target_role": role_info["title"],
             "percentile_score": f"{percentile}th Percentile",
-            "comparison_with_top_cohort": "Top 12% Candidate Profile"
-            if percentile >= 85
-            else "Average Applicant Cohort",
+            "comparison_with_top_cohort": (
+                "Top 12% Candidate Profile" if percentile >= 85 else "Average Applicant Cohort"
+            ),
             "matched_keywords": matched_kw,
             "top_missing_keywords": missing_kw,
             "skills_ranked_by_importance": [

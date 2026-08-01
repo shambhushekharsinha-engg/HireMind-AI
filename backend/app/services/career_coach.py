@@ -29,9 +29,11 @@ class AnswerValidator:
         return {
             "is_valid": is_valid,
             "confidence_score": confidence_score,
-            "validated_answer": answer
-            if is_valid
-            else f"Here is key career guidance regarding '{question}': Focus on measurable outcomes and technical skills match.",
+            "validated_answer": (
+                answer
+                if is_valid
+                else f"Here is key career guidance regarding '{question}': Focus on measurable outcomes and technical skills match."
+            ),
         }
 
 
