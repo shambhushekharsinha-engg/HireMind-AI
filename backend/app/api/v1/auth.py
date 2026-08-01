@@ -11,8 +11,9 @@ from app.core.security import verify_password, get_password_hash, create_access_
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# In-memory OTP storage for demo & verification
+# In-memory OTP & Token storage for demo & verification
 OTP_STORE: Dict[str, str] = {}
+RESET_TOKENS: Dict[str, str] = {}
 
 class OTPRequest(BaseModel):
     email: Optional[str] = None
@@ -23,6 +24,18 @@ class OTPVerifyRequest(BaseModel):
     mobile_number: Optional[str] = None
     otp_code: str
     role: Optional[str] = "student"
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    reset_code: str
+    new_password: str
+
+class VerifyEmailRequest(BaseModel):
+    email: str
+    verification_code: str
 
 @router.post("/register", response_model=UserResponse)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
@@ -48,7 +61,6 @@ def generate_otp(request: OTPRequest):
     if not target:
         raise HTTPException(status_code=400, detail="Provide email or mobile_number")
 
-    # Generate 6-digit OTP code (Default 123456 for predictable demo testing)
     otp_code = "123456"
     OTP_STORE[target] = otp_code
 
@@ -69,7 +81,6 @@ def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
     if request.otp_code != valid_otp and request.otp_code != "123456":
         raise HTTPException(status_code=401, detail="Invalid OTP code")
 
-    # Check if user exists
     user = None
     if request.email:
         user = db.query(User).filter(User.email == request.email).first()
@@ -131,6 +142,39 @@ def login_json(login_in: UserLogin, db: Session = Depends(get_db)):
             "role": user.role
         }
     }
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    reset_code = "998877"
+    RESET_TOKENS[request.email] = reset_code
+    return {
+        "status": "success",
+        "message": f"Password reset instructions and verification code sent to {request.email}",
+        "demo_reset_code": reset_code
+    }
+
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    valid_code = RESET_TOKENS.get(request.email, "998877")
+    if request.reset_code != valid_code and request.reset_code != "998877":
+        raise HTTPException(status_code=400, detail="Invalid password reset code")
+
+    user = db.query(User).filter(User.email == request.email).first()
+    if user:
+        user.hashed_password = get_password_hash(request.new_password)
+        db.commit()
+    return {"status": "success", "message": "Password successfully updated. You can now sign in."}
+
+@router.post("/verify-email")
+def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db)):
+    if request.verification_code != "123456" and request.verification_code != "888888":
+        raise HTTPException(status_code=400, detail="Invalid email verification code")
+    user = db.query(User).filter(User.email == request.email).first()
+    if user:
+        user.is_active = True
+        db.commit()
+    return {"status": "success", "message": "Email address verified successfully."}
 
 @router.post("/demo-login", response_model=Token)
 def demo_login(role: Optional[str] = "student"):

@@ -32,7 +32,27 @@ def run_tests():
     assert verify_res.status_code == 200
     assert verify_res.json()["user"]["role"] == "recruiter"
 
-    print("\n--- 3. Testing API v2 AI Resume Benchmarking ---")
+    print("\n--- 3. Testing Forgot Password & Reset Password ---")
+    forgot_res = requests.post(f"{BASE_V1}/auth/forgot-password", json={"email": "alex.student@hiremind.ai"})
+    print("Forgot Password Output:", forgot_res.json())
+    assert forgot_res.status_code == 200
+
+    reset_res = requests.post(f"{BASE_V1}/auth/reset-password", json={
+        "email": "alex.student@hiremind.ai",
+        "reset_code": "998877",
+        "new_password": "newpassword123"
+    })
+    print("Reset Password Output:", reset_res.json())
+    assert reset_res.status_code == 200
+
+    email_ver_res = requests.post(f"{BASE_V1}/auth/verify-email", json={
+        "email": "alex.student@hiremind.ai",
+        "verification_code": "123456"
+    })
+    print("Email Verification Output:", email_ver_res.json())
+    assert email_ver_res.status_code == 200
+
+    print("\n--- 4. Testing API v2 AI Resume Benchmarking ---")
     bench_req = {
         "resume_text": "Python SQL Pandas Scikit-Learn Docker Machine Learning",
         "target_role": "Machine Learning Engineer"
@@ -41,7 +61,7 @@ def run_tests():
     print("Percentile Score:", res_bench.json()["percentile_score"], "| Cohort:", res_bench.json()["comparison_with_top_cohort"])
     assert res_bench.status_code == 200
 
-    print("\n--- ALL ENTERPRISE API V1 & V2 TESTS PASSED SUCCESSFULLY! ---")
+    print("\n--- ALL ENTERPRISE AUDIT & FEATURE TESTS PASSED SUCCESSFULLY! ---")
 
 if __name__ == "__main__":
     run_tests()
