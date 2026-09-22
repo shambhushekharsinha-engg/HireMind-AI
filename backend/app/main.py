@@ -115,6 +115,26 @@ def auto_migrate_schema():
                     )
                 )
                 conn.execute(text("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;"))
+
+                # 5. Enable Supabase Row-Level Security (RLS) on all public tables to resolve 'rls_disabled_in_public' security vulnerability
+                tables_for_rls = [
+                    "users",
+                    "resumes",
+                    "resume_revisions",
+                    "resume_analyses",
+                    "job_descriptions",
+                    "job_matches",
+                    "job_applications",
+                    "resume_builder_drafts",
+                    "password_reset_tokens",
+                    "feedbacks",
+                    "notifications",
+                ]
+                for table_name in tables_for_rls:
+                    try:
+                        conn.execute(text(f"ALTER TABLE IF EXISTS public.{table_name} ENABLE ROW LEVEL SECURITY;"))
+                    except Exception as rls_err:
+                        logger.warning(f"RLS enable notice for {table_name}: {rls_err}")
             else:
                 # SQLite PRAGMA table_info check & ADD COLUMN
                 tables_to_check = {
