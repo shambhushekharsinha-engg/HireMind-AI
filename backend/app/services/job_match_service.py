@@ -4,15 +4,24 @@ from app.services.nlp_engine import NLPEngine
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Try importing SentenceTransformer for dense embeddings
-try:
-    from sentence_transformers import SentenceTransformer
+# Lazy-loaded SentenceTransformer for dense embeddings to ensure sub-second startup
+_embedding_model = None
+_has_sentence_transformer = None
 
-    EMBEDDING_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-    HAS_SENTENCE_TRANSFORMER = True
-except Exception:
-    EMBEDDING_MODEL = None
-    HAS_SENTENCE_TRANSFORMER = False
+def get_embedding_model():
+    global _embedding_model, _has_sentence_transformer
+    if _has_sentence_transformer is False:
+        return None
+    if _embedding_model is not None:
+        return _embedding_model
+    try:
+        from sentence_transformers import SentenceTransformer
+        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        _has_sentence_transformer = True
+        return _embedding_model
+    except Exception:
+        _has_sentence_transformer = False
+        return None
 
 
 class JobMatchService:
@@ -43,9 +52,10 @@ class JobMatchService:
             tfidf_sim = 50.0
 
         # 3. Dense Embedding Cosine Similarity (60% weight of semantic score)
-        if HAS_SENTENCE_TRANSFORMER and EMBEDDING_MODEL:
+        model = get_embedding_model()
+        if model is not None:
             try:
-                embeddings = EMBEDDING_MODEL.encode([resume_text[:2000], job_description[:2000]])
+                embeddings = model.encode([resume_text[:2000], job_description[:2000]])
                 embedding_sim = float(cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]) * 100.0
             except Exception:
                 embedding_sim = tfidf_sim
