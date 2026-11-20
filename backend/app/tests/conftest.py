@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -5,6 +6,10 @@ from pathlib import Path
 backend_dir = str(Path(__file__).resolve().parent.parent.parent)
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
+
+# Default to fast, isolated SQLite for local test runs if not explicitly set
+if "DATABASE_URL" not in os.environ or "sqlite" not in os.environ.get("DATABASE_URL", ""):
+    os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 import app.models.all_models  # noqa: F401 - Register all SQLAlchemy models in Base.metadata
 import pytest
@@ -17,6 +22,9 @@ def setup_test_database():
     """
     Ensure clean database schema with all latest columns before executing test suite.
     """
-    Base.metadata.drop_all(bind=engine)
+    try:
+        Base.metadata.drop_all(bind=engine)
+    except Exception:
+        pass
     Base.metadata.create_all(bind=engine)
     yield

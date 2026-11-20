@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import ArchitectureInspectorModal from './components/ArchitectureInspectorModal';
 import AuthLandingPage from './pages/AuthLandingPage';
 import DashboardPage from './pages/DashboardPage';
 import ATSAnalyzerPage from './pages/ATSAnalyzerPage';
@@ -26,6 +27,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [user, setUser] = useState(null);
+  const [uxMode, setUxMode] = useState('executive'); // 'executive' (default) | 'tactical'
+  const [showArchitectureModal, setShowArchitectureModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -52,19 +56,41 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Top Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} user={user} setUser={setUser} />
+    <div className="h-screen w-screen bg-[#0b0f19] text-gray-100 flex flex-col font-sans overflow-hidden selection:bg-indigo-500 selection:text-white">
+      {/* Top Fixed Navbar */}
+      <Navbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        user={user} 
+        setUser={setUser}
+        uxMode={uxMode}
+        setUxMode={setUxMode}
+        onOpenArchitecture={() => setShowArchitectureModal(true)}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
 
       {/* Main Layout Container */}
-      <div className="flex flex-1">
-        {/* Left Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar (Desktop + Mobile Drawer) */}
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          uxMode={uxMode}
+          onOpenArchitecture={() => setShowArchitectureModal(true)}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        {/* Main Content Canvas (Scrollable independently) */}
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
           {activeTab === 'dashboard' && (
-            <DashboardPage setActiveTab={setActiveTab} latestAnalysis={latestAnalysis} />
+            <DashboardPage 
+              setActiveTab={setActiveTab} 
+              latestAnalysis={latestAnalysis}
+              uxMode={uxMode}
+              onOpenArchitecture={() => setShowArchitectureModal(true)}
+            />
           )}
 
           {activeTab === 'builder' && (
@@ -140,6 +166,12 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* Judges' Architecture Inspector Modal */}
+      <ArchitectureInspectorModal 
+        isOpen={showArchitectureModal}
+        onClose={() => setShowArchitectureModal(false)}
+      />
     </div>
   );
 }
