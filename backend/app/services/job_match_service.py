@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 _embedding_model = None
 _has_sentence_transformer = None
 
+
 def get_embedding_model():
     global _embedding_model, _has_sentence_transformer
     if _has_sentence_transformer is False:
@@ -16,6 +17,7 @@ def get_embedding_model():
         return _embedding_model
     try:
         from sentence_transformers import SentenceTransformer
+
         _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
         _has_sentence_transformer = True
         return _embedding_model
