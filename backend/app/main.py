@@ -29,7 +29,10 @@ logger = logging.getLogger("hiremind")
 run_startup_checks()
 
 # Initialize DB tables & Run Auto Schema Migration for PostgreSQL / SQLite
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    logger.warning(f"Database table initialization notice: {e}")
 
 
 def auto_migrate_schema():

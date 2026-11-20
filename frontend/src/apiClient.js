@@ -1,11 +1,13 @@
-import { getApiBaseUrl } from './config';
+import { getApiBaseUrl, API_BASE_URL } from './config';
+
+export { getApiBaseUrl, API_BASE_URL };
 
 /**
  * Enterprise Resilient API Client
  * - Prepends getApiBaseUrl() dynamically
  * - Attaches auth tokens if present
- * - Enforces timeout (default 8s) to avoid indefinite hangs
- * - Provides graceful error objects rather than unhandled promise rejections
+ * - Enforces timeout (default 12s) to avoid indefinite hangs
+ * - Provides graceful error handling
  */
 export async function apiFetch(endpoint, options = {}, timeoutMs = 12000) {
   const baseUrl = getApiBaseUrl();
@@ -22,7 +24,7 @@ export async function apiFetch(endpoint, options = {}, timeoutMs = 12000) {
       headers['Authorization'] = `Bearer ${token}`;
     }
   } catch (e) {
-    // ignore localStorage errors
+    // ignore localStorage errors in private browsing / sandboxes
   }
 
   const controller = new AbortController();
@@ -39,8 +41,24 @@ export async function apiFetch(endpoint, options = {}, timeoutMs = 12000) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s. Backend may be waking up.`);
+      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s. Gateway may be waking up.`);
     }
     throw err;
   }
+}
+
+/**
+ * Safe JSON/Text API fetcher that throws on non-2xx responses
+ * so calling pages can smoothly trigger their deterministic failovers.
+ */
+export async function safeApiFetch(endpoint, options = {}, timeoutMs = 12000) {
+  const res = await apiFetch(endpoint, options, timeoutMs);
+  if (!res.ok) {
+    throw new Error(`API returned HTTP ${res.status}`);
+  }
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return await res.json();
+  }
+  return await res.text();
 }
